@@ -57,6 +57,12 @@
     "serve": {
       "continuous": true,
       "executor": "@angular-devkit/build-angular:dev-server",
+      "dependsOn": [
+        {
+          "target": "build",
+          "projects": ["smz-core", "smz-layout", "smz-forms"]
+        }
+      ],
       "configurations": {
         "production": {
           "buildTarget": "playground:build:production"
