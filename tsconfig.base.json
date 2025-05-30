@@ -1,0 +1,16 @@
+{
+  "compileOnSave": false,
+  "compilerOptions": {
+    "experimentalDecorators": true,
+    "importHelpers": true,
+    "target": "ES2022",
+    "module": "preserve",
+    "skipLibCheck": true,
+    "baseUrl": ".",
+    "paths": {
+      "smz-core": ["libs/smz-core/src/index.ts"],
+      "smz-forms": ["libs/smz-forms/src/index.ts"],
+      "smz-layout": ["libs/smz-layout/src/index.ts"]
+    }
+  }
+}

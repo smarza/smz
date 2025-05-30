@@ -6,7 +6,8 @@
     "start": "nx serve",
     "build": "nx build",
     "watch": "nx build --watch --configuration development",
-    "test": "nx test"
+    "test": "nx test",
+    "serve:playground": "npx nx run playground:serve"
   },
   "private": true,
   "dependencies": {
@@ -15,20 +16,37 @@
     "@angular/core": "^20.0.0",
     "@angular/forms": "^20.0.0",
     "@angular/platform-browser": "^20.0.0",
+    "@angular/platform-server": "~20.0.0",
     "@angular/router": "^20.0.0",
+    "@angular/ssr": "~20.0.0",
+    "express": "^4.21.2",
     "rxjs": "~7.8.0",
-    "tslib": "^2.3.0",
-    "zone.js": "~0.15.0"
+    "tslib": "^2.3.0"
   },
   "devDependencies": {
+    "@angular-devkit/build-angular": "~20.0.0",
     "@angular-devkit/core": "^20.0.0",
     "@angular-devkit/schematics": "^20.0.0",
     "@angular/cli": "^20.0.0",
     "@angular/compiler-cli": "^20.0.0",
+    "@angular/language-service": "~20.0.0",
+    "@eslint/js": "^9.8.0",
     "@nx/angular": "21.1.2",
+    "@nx/eslint": "21.1.2",
+    "@nx/eslint-plugin": "21.1.2",
+    "@nx/js": "21.1.2",
+    "@nx/web": "21.1.2",
     "@nx/workspace": "21.1.2",
     "@schematics/angular": "^20.0.0",
+    "@swc-node/register": "~1.9.1",
+    "@swc/core": "~1.5.7",
+    "@swc/helpers": "~0.5.11",
+    "@types/express": "^5.0.1",
     "@types/jasmine": "~5.1.0",
+    "@typescript-eslint/utils": "^8.19.0",
+    "angular-eslint": "^19.6.0",
+    "eslint": "^9.8.0",
+    "eslint-config-prettier": "^10.0.0",
     "jasmine-core": "~5.7.0",
     "karma": "~6.4.0",
     "karma-chrome-launcher": "~3.2.0",
@@ -36,6 +54,8 @@
     "karma-jasmine": "~5.1.0",
     "karma-jasmine-html-reporter": "~2.1.0",
     "nx": "21.1.2",
-    "typescript": "~5.8.2"
+    "prettier": "^2.6.2",
+    "typescript": "~5.8.2",
+    "typescript-eslint": "^8.33.0"
   }
 }
