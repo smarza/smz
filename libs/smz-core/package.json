@@ -1,5 +1,5 @@
 {
-  "name": "@smz-ui/smz-core",
+  "name": "@smz-ui/core",
   "version": "0.0.1",
   "peerDependencies": {
     "@angular/common": "^20.0.0",

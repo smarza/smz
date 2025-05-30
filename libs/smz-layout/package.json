@@ -1,5 +1,5 @@
 {
-  "name": "@smz-ui/smz-layout",
+  "name": "@smz-ui/layout",
   "version": "0.0.1",
   "peerDependencies": {
     "@angular/common": "^20.0.0",
