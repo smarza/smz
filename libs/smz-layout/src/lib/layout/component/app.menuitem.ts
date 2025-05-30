@@ -73,21 +73,13 @@ import { SMZ_UI_LAYOUT_CONFIG } from '../../config/provide';
 })
 export class AppMenuitemComponent implements OnInit, OnDestroy {
     @Input() item!: MenuItem;
-
     @Input() index!: number;
-
     @Input() @HostBinding('class.layout-root-menuitem') root!: boolean;
-
     @Input() parentKey!: string;
-
     public hasClaim = inject(SMZ_UI_LAYOUT_CONFIG).hasClaim;
-
     active = false;
-
     menuSourceSubscription: Subscription;
-
     menuResetSubscription: Subscription;
-
     key = '';
 
     constructor(
