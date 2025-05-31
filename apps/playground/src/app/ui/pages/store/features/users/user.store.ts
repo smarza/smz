@@ -1,85 +1,110 @@
-// src/app/features/users/user.store.ts
-import { Injectable, computed, effect, inject, Injector, signal } from '@angular/core';
-import { httpResource } from '@angular/common/http';
-import { LoggingService, ScopedLogger } from '@smz-ui/layout';
-import { User } from './user.model';
+import { Injectable, signal, computed, effect, inject } from '@angular/core';
+import { resource, ResourceRef } from '@angular/core';
 import { UserApiService } from './user.api';
-
-/**
- * We'll create a small "user slice" of state that holds:
- *   - a Signal of selectedUserId (number)
- *   - a httpResource for fetching a single user by ID
- *   - a httpResource for fetching all users once
- */
+import { User } from './user.model';
+import { LoggingService, ScopedLogger } from '@smz-ui/layout';
 
 @Injectable({ providedIn: 'root' })
 export class UserStore {
-  private http = inject(UserApiService);
-  private injector = inject(Injector);
+  // Inject the API service and the logger
+  private api = inject(UserApiService);
   private loggingService = inject(LoggingService);
   private logger: ScopedLogger = this.loggingService.scoped(UserStore.name);
 
-  // Signal that holds the currently selected user ID
+  // Signal to hold the currently selected user ID
   private selectedUserId = signal<number>(1);
 
-  // 1) Resource to fetch ONE user (based on selectedUserId)
-  readonly selectedUserResource = httpResource<User>(
-    () => `https://jsonplaceholder.typicode.com/users/${this.selectedUserId()}`,
-    {
-      injector: this.injector,
-      defaultValue: { id: 0, name: 'Loading…', email: '' },
-      parse: (raw) => {
-        const user = raw as User;
-        if (!user.id) {
-          throw new Error('User parse error: invalid ID');
-        }
+  /**
+   * Resource that loads a single User whenever selectedUserId() changes.
+   * Uses UserApiService.getUserById(...) under the hood.
+   * Provides a defaultValue so that value() is always User (never undefined).
+   */
+  readonly selectedUserResource: ResourceRef<User> = resource<User, { id: number }>({
+    params: () => ({ id: this.selectedUserId() }),
+    loader: async ({ params }) => {
+      const { id } = params;
+      this.logger.info(`UserStore: loading user with id=${id}`);
+      try {
+        const user = await this.api.getUserById(id);
+        this.logger.info(`UserStore: successfully loaded user with id=${user.id}`);
+        // Freeze the returned object to enforce immutability
         return Object.freeze({ ...user });
-      },
-      equal: (a, b) => a.id === b.id && a.email === b.email && a.name === b.name
-    }
-  );
+      } catch (error: unknown) {
+        this.logger.error(`UserStore: error loading user with id=${id}`, error);
+        // Re-throw so resource.status() becomes 'error'
+        throw error;
+      }
+    },
+    defaultValue: { id: 0, name: 'Loading…', email: '' }
+  });
 
-  // 2) Resource to fetch ALL users once (you can call .reload() manually if needed)
-  readonly allUsersResource = httpResource<User[]>(
-    () => ({
-      url: 'https://jsonplaceholder.typicode.com/users',
-      // Could add params, headers, etc.
-    }),
-    {
-      injector: this.injector,
-      defaultValue: [],
-      parse: (raw) => {
-        const arr = raw as User[];
-        return arr.map(u => ({ ...u }));
-      },
-      equal: (a, b) =>
-        a.length === b.length &&
-        a.every((u, idx) => u.id === b[idx].id && u.name === b[idx].name && u.email === b[idx].email)
-    }
-  );
+  /**
+   * Resource that loads all Users once (or when reload() is called).
+   * Uses UserApiService.getAllUsers() under the hood.
+   * Provides a defaultValue of an empty array so that value() is never undefined.
+   */
+  readonly allUsersResource: ResourceRef<User[]> = resource<User[], void>({
+    // No params needed here; resource() will load once on initialization,
+    // and any time .reload() is called.
+    params: () => ({}),
+    loader: async () => {
+      this.logger.info('UserStore: loading all users');
+      try {
+        const users = await this.api.getAllUsers();
+        this.logger.info(`UserStore: successfully loaded ${users.length} users`);
+        // Return a new array with copied objects
+        return users.map(u => ({ ...u }));
+      } catch (error: unknown) {
+        this.logger.error('UserStore: error loading all users', error);
+        // Return an empty array on error so templates don't break.
+        return [];
+      }
+    },
+    defaultValue: []
+  });
 
-  // Derived "selectors"
+  // Computed signals to expose current value/status for components to consume
+
+  /** The currently selected User (default is empty placeholder until loaded) */
   readonly selectedUser = computed(() => this.selectedUserResource.value());
+
+  /** The loading/error/idle/resolved status of the selectedUserResource */
   readonly selectedUserStatus = computed(() => this.selectedUserResource.status());
+
+  /** The full list of Users (default is empty array until loaded) */
   readonly allUsers = computed(() => this.allUsersResource.value());
+
+  /** The loading/error/idle/resolved status of the allUsersResource */
   readonly allUsersStatus = computed(() => this.allUsersResource.status());
 
   constructor() {
-    // Example: Log whenever selectedUser changes
+    // Use effect() to log whenever selectedUserResource.value() changes
     effect(() => {
-      const u = this.selectedUserResource.value();
-      this.logger.debug('UserStore: selected user updated', u?.id);
+      const user = this.selectedUserResource.value();
+      if (user && user.id !== 0) {
+        this.logger.debug('UserStore: selectedUserResource updated →', user.id);
+      }
+    });
+
+    // Use effect() to log whenever allUsersResource.value() changes
+    effect(() => {
+      const list = this.allUsersResource.value();
+      this.logger.debug(`UserStore: allUsersResource updated → count=${list.length}`);
     });
   }
 
-  /** Method to change which user is selected */
+  /**
+   * Change which user is "selected". This causes selectedUserResource to auto-reload.
+   */
   setSelectedUserId(id: number): void {
-    this.logger.info('UserStore: setSelectedUserId', id);
+    this.logger.info('UserStore: setSelectedUserId →', id);
     this.selectedUserId.set(id);
-    // httpResource will auto-reload because URL changed
+    // resource will detect the new id and trigger loader() automatically
   }
 
-  /** Manually force reload "all users" */
+  /**
+   * Manually force reloading all users.
+   */
   reloadAllUsers(): void {
     this.logger.info('UserStore: reloadAllUsers');
     this.allUsersResource.reload();
