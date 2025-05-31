@@ -10,13 +10,19 @@ import { UserApiService } from '../features/users/user.api';
 export const userStoreProvider = (() => {
   const builder = new ResourceStoreBuilder<User, UserParams>()
     // 1) Parâmetros iniciais do store: id = 1
-    .withInitialParams({ id: 1 })
+    .withInitialParams({ id: 9 })
     // 2) Valor padrão enquanto o backend não responde
     .withDefaultValue({ id: 0, name: 'Loading…', email: '' })
     // 3) Loader real: recebe (params, userApiService) e chama o backend
     .withLoaderFn((params: UserParams, api: UserApiService) =>
-      api.getUserById(params.id)
+      api.getUserById(params.id).catch((httpErr: any) => {
+        if (httpErr.status === 404) {
+          throw new Error(`Usuário ${params.id} não existe.`);
+        }
+        throw new Error(httpErr.message ?? 'Erro desconhecido');
+      })
     )
+    .addDependency(UserApiService)
     // 4) TTL de 2 minutos (120000 ms)
     .withTtlMs(2 * 60 * 1000);
 

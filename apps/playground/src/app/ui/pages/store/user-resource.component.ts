@@ -2,10 +2,11 @@
 import { Component, inject } from '@angular/core';
 import { UserResourceStore } from './features/users/user.resource-store';
 import { ButtonModule } from 'primeng/button';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-user-resource',
-  imports: [ButtonModule],
+  imports: [CommonModule, ButtonModule],
   template: `
   @if (store.isLoading()){
     <div>
