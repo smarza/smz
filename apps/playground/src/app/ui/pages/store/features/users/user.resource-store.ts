@@ -14,23 +14,34 @@ export class UserResourceStore extends ResourceStore<User, UserParams> {
     super();
   }
 
-  /** 1) We want to start by loading user with ID = 1 initially */
+  /** 1) Parâmetros iniciais: queremos começar carregando o usuário com ID = 1 */
   protected getInitialParams(): UserParams {
     return { id: 1 };
   }
 
-  /** 2) Until the real User loads, we expose this “placeholder” user */
+  /** 2) Valor padrão exibido enquanto o real não chega (forme imutável) */
   protected getDefaultValue(): User {
     return { id: 0, name: 'Loading…', email: '' };
   }
 
-  /** 3) The actual API call that returns a Promise<User> */
+  /** 3) Chamada real ao UserApiService que retorna Promise<User>  */
   protected loadFromApi(params: UserParams): Promise<User> {
     return this.api.getUserById(params.id);
   }
 
-  /** Convenience: change the selected user ID */
+  /**
+   * Conveniência: troque rapidamente qual usuário está selecionado.
+   * Exemplo: store.setSelectedUserId(5)
+   */
   setSelectedUserId(id: number): void {
     this.setParams({ id });
+  }
+
+  /**
+   * opcional: recarregar o mesmo ID sem alterá-lo
+   * (por exemplo, após um timeout ou clique em “Recarregar”)
+   */
+  reloadUser(): void {
+    this.reload();
   }
 }
