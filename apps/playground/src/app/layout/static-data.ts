@@ -8,6 +8,7 @@ export const INITIAL_SIDEBAR: MenuItem[] = [
             { label: 'Page 1', icon: 'pi pi-fw pi-home', routerLink: ['/page-1'] },
             { label: 'Page 2', icon: 'pi pi-fw pi-home', routerLink: ['/page-2'] },
             { label: 'Store', icon: 'pi pi-fw pi-home', routerLink: ['/store'] },
+            { label: 'User Resource', icon: 'pi pi-fw pi-home', routerLink: ['/user-resource'] },
             { label: 'HTTP Resource Demo', icon: 'pi pi-fw pi-home', routerLink: ['/http-resource-demo'] },
             { label: 'User Resource Demo', icon: 'pi pi-fw pi-home', routerLink: ['/user-resource-demo'] },
         ]

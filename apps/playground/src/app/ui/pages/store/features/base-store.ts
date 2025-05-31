@@ -18,7 +18,7 @@ export abstract class BaseStore<T extends Record<string, any>> {
 
   constructor(initialState: T) {
     // Initialize the logger with the subclass’s name
-    this.logger = this.loggingService.scoped((this.constructor as any).name);
+    this.logger = this.loggingService.scoped((this.constructor as { name: string }).name);
     this.logger.debug('BaseStore: constructor', initialState);
     // Create the signal with initial state
     this._state = signal(this._deepFreeze(initialState));

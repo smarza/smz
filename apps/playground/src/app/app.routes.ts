@@ -6,6 +6,7 @@ import { Page2Component } from './ui/pages/page-2.component';
 import { HttpResourceDemoComponent } from './ui/http-resource-demo/http-resource-demo.component';
 import { UserResourceDemoComponent } from './ui/http-resource-demo/user-resource-demo.component';
 import { StoreComponent } from './ui/pages/store/store.component';
+import { UserResourceComponent } from './ui/pages/store/user-resource.component';
 
 export const appRoutes: Route[] = [
   {
@@ -25,6 +26,7 @@ export const appRoutes: Route[] = [
           { path: 'page-1', component: Page1Component, data: { title: 'Page 1' } },
           { path: 'page-2', component: Page2Component, data: {} },
           { path: 'store', component: StoreComponent, data: { title: 'Store' } },
+          { path: 'user-resource', component: UserResourceComponent, data: { title: 'User Resource' } },
           { path: 'http-resource-demo', component: HttpResourceDemoComponent, data: { title: 'HTTP Resource Demo' } },
           { path: 'user-resource-demo', component: UserResourceDemoComponent, data: { title: 'User Resource Demo' } },
           { path: '', redirectTo: 'home', pathMatch: 'full' },
