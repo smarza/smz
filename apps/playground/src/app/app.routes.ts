@@ -7,6 +7,7 @@ import { HttpResourceDemoComponent } from './ui/http-resource-demo/http-resource
 import { UserResourceDemoComponent } from './ui/http-resource-demo/user-resource-demo.component';
 import { StoreComponent } from './ui/pages/store/store.component';
 import { UserResourceComponent } from './ui/pages/store/user-resource.component';
+import { UserDynamicResourceComponent } from './ui/pages/store/user-dynamic-resource.component';
 
 export const appRoutes: Route[] = [
   {
@@ -27,6 +28,7 @@ export const appRoutes: Route[] = [
           { path: 'page-2', component: Page2Component, data: {} },
           { path: 'store', component: StoreComponent, data: { title: 'Store' } },
           { path: 'user-resource', component: UserResourceComponent, data: { title: 'User Resource' } },
+          { path: 'user-dynamic-resource', component: UserDynamicResourceComponent, data: { title: 'User Dynamic Resource' } },
           { path: 'http-resource-demo', component: HttpResourceDemoComponent, data: { title: 'HTTP Resource Demo' } },
           { path: 'user-resource-demo', component: UserResourceDemoComponent, data: { title: 'User Resource Demo' } },
           { path: '', redirectTo: 'home', pathMatch: 'full' },

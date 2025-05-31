@@ -15,6 +15,7 @@ import { appFooter } from './layout/app.footer';
 import { appTopbar } from './layout/app.topbar';
 import { appLayout } from './layout/app.layout';
 import { authInterceptor } from './ui/pages/store/features/auth/auth.interceptor';
+import { userStoreProvider } from './ui/pages/store/core/user-resource-store.provider';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -39,6 +40,7 @@ export const appConfig: ApplicationConfig = {
     provideAppInitializer(async () => {
       const config = inject(SMZ_UI_LAYOUT_CONFIG);
       config.hasClaim = () => true;
-    })
+    }),
+    userStoreProvider
   ],
 };
