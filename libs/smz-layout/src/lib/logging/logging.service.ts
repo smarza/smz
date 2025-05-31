@@ -3,13 +3,7 @@ import { Injectable, signal, computed, inject } from '@angular/core';
 import { SMZ_LAYOUT_LOGGING_CONFIG } from './config/provide';
 import { LoggingScope } from './logging-scope';
 import { LoggingConfig } from './logging-config';
-
-export interface ScopedLogger {
-  log(message?: unknown, ...optionalParams: unknown[]): void;
-  warn(message?: unknown, ...optionalParams: unknown[]): void;
-  error(message?: unknown, ...optionalParams: unknown[]): void;
-  debug(message?: unknown, ...optionalParams: unknown[]): void;
-}
+import { ScopedLogger } from './scoped-logger';
 
 @Injectable({ providedIn: 'root' })
 export class LoggingService {
@@ -31,7 +25,7 @@ export class LoggingService {
 
   private shouldLog(
     method: 'debug' | 'info' | 'warn' | 'error',
-    owner?: LoggingScope
+    owner?: LoggingScope | string
   ): boolean {
     if (!this.enabled()) {
       return false;
@@ -49,7 +43,7 @@ export class LoggingService {
     // respeita scopes se fornecido
     const scopes = cfg.restrictedScopes;
     if (scopes && scopes.length > 0 && owner) {
-      if (!(scopes.includes(LoggingScope['*' as keyof typeof LoggingScope]) || scopes.includes(owner))) {
+      if (!(scopes.includes(LoggingScope['*' as keyof typeof LoggingScope]) || scopes.includes(owner as LoggingScope))) {
         return false;
       }
     }
@@ -80,7 +74,7 @@ export class LoggingService {
    * Retorna um logger com prefixo [owner] e restringe pelos scopes do config
    * owner agora é um LoggingScope
    */
-  public scoped(owner: LoggingScope): ScopedLogger {
+  public scoped(owner: LoggingScope | string): ScopedLogger {
     const prefix = `[${owner}]`;
     return {
       log: (msg?: unknown, ...params: unknown[]) => {

@@ -6,8 +6,9 @@ import {
   RouterStateSnapshot
 } from '@angular/router';
 import { filter } from 'rxjs/operators';
-import { LoggingService, ScopedLogger } from '../../logging/logging.service';
+import { LoggingService } from '../../logging/logging.service';
 import { LoggingScope } from '../../logging/logging-scope';
+import { ScopedLogger } from '../../logging/scoped-logger';
 
 @Injectable({ providedIn: 'root' })
 export class PageTitleService {

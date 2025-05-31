@@ -1,9 +1,10 @@
 import { Component, inject } from '@angular/core';
 import { HttpResourceService } from '../../services/http-resource.service';
 import { CommonModule } from '@angular/common';
+import { UserResourceService } from '../../services/user-resource.service';
 
 @Component({
-  selector: 'app-http-resource-demo',
+  selector: 'app-user-resource-demo',
   standalone: true,
   imports: [CommonModule],
   template: `
@@ -27,15 +28,12 @@ import { CommonModule } from '@angular/common';
         <h3 class="text-xl font-semibold mb-2">User Resource</h3>
         @if (service.userResource.isLoading()) {
           <p>Loading user...</p>
-        }
-        @else if (service.userResource.error()) {
+        } @else if (service.userResource.error()) {
           <p class="text-red-500">Error: {{ service.userResource.error() }}</p>
-        }
-        @else if (service.userResource.value()) {
-          @let user = service.userResource.value();
+        } @else if (service.userResource.value()) {
           <div class="border p-4 rounded">
-            <p><strong>Name:</strong> {{ user?.name }}</p>
-            <p><strong>Email:</strong> {{ user?.email }}</p>
+            <p><strong>Name:</strong> {{ service.userResource.value()?.name }}</p>
+            <p><strong>Email:</strong> {{ service.userResource.value()?.email }}</p>
           </div>
         }
         <button (click)="service.userResource.reload()" class="mt-2 bg-blue-500 text-white px-4 py-2 rounded">
@@ -48,14 +46,11 @@ import { CommonModule } from '@angular/common';
         <h3 class="text-xl font-semibold mb-2">Posts Resource</h3>
         @if (service.postsResource.isLoading()) {
           <p>Loading posts...</p>
-        }
-        @else if (service.postsResource.error()) {
+        } @else if (service.postsResource.error()) {
           <p class="text-red-500">Error: {{ service.postsResource.error() }}</p>
-        }
-        @else if (service.postsResource.value()) {
-          @let posts = service.postsResource.value();
+        } @else if (service.postsResource.value()) {
           <div class="space-y-2">
-            @for (post of posts; track post.id) {
+            @for (post of service.postsResource.value(); track post.id) {
               <div class="border p-4 rounded">
                 <h4 class="font-semibold">{{ post.title }}</h4>
                 <p>{{ post.body }}</p>
@@ -73,20 +68,17 @@ import { CommonModule } from '@angular/common';
         <h3 class="text-xl font-semibold mb-2">User with Posts Resource</h3>
         @if (service.userWithPostsResource.isLoading()) {
           <p>Loading user and posts...</p>
-        }
-        @else if (service.userWithPostsResource.error()) {
+        } @else if (service.userWithPostsResource.error()) {
           <p class="text-red-500">Error: {{ service.userWithPostsResource.error() }}</p>
-        }
-        @else if (service.userWithPostsResource.value()) {
-          @let userWithPosts = service.userWithPostsResource.value();
+        } @else if (service.userWithPostsResource.value()) {
           <div class="border p-4 rounded mb-4">
             <h4 class="font-semibold">User Information</h4>
-            <p><strong>Name:</strong> {{ userWithPosts?.user?.name }}</p>
-            <p><strong>Email:</strong> {{ userWithPosts?.user?.email }}</p>
+            <p><strong>Name:</strong> {{ service.userWithPostsResource.value()?.user?.name }}</p>
+            <p><strong>Email:</strong> {{ service.userWithPostsResource.value()?.user?.email }}</p>
           </div>
           <div class="space-y-2">
             <h4 class="font-semibold">User's Posts</h4>
-            @for (post of userWithPosts?.posts ?? []; track post.id) {
+            @for (post of service.userWithPostsResource.value()?.posts ?? []; track post.id) {
               <div class="border p-4 rounded">
                 <h5 class="font-semibold">{{ post.title }}</h5>
                 <p>{{ post.body }}</p>
@@ -101,8 +93,8 @@ import { CommonModule } from '@angular/common';
     </div>
   `
 })
-export class HttpResourceDemoComponent {
-  service = inject(HttpResourceService);
+export class UserResourceDemoComponent {
+  service = inject(UserResourceService);
 
   updateUserId(event: Event) {
     const input = event.target as HTMLInputElement;
@@ -112,5 +104,3 @@ export class HttpResourceDemoComponent {
     }
   }
 } 
-
-
