@@ -13,38 +13,35 @@ import { resource, ResourceRef } from '@angular/core';
 import { LoggingService, ScopedLogger } from '@smz-ui/layout';
 
 /**
- * Generic base class for any store that loads a single "resource" T
+ * Generic base class for any store that loads a single “resource” T
  * based on a parameter object P.
  *
- * T = the type of the data returned by the API (for example: User, Post[])
- * P = the "params" object used to drive the resource loader (for example: { id: number }).
- *     If a store doesn't need params, use P = void.
+ * T = type of data returned by the API (e.g. User, Post[])
+ * P = “params” object used to drive the loader (e.g. { id: number }). If no params, use P = void.
  *
  * This class sets up:
  *  - A WritableSignal<P> called paramsSignal
  *  - A ResourceRef<T> called resourceRef
  *  - computed() signals: value, status, error, errorMessage, isLoading, isError, isResolved
- *  - auto‐logging effects when value or status changes
+ *  - auto-logging effects when value or status changes
  *  - public methods setParams(...) and reload()
+ *  - automatic TTL/revalidation: after a successful load, waits getTtlMs() ms, then reloads
  *
- * Production considerations já embutidas:
- *  - Exposição direta de error() e errorMessage
- *  - Flags booleanas de loading / error / resolved
- *  - Deep‐freeze recursivo em parâmetros antes de mudar o sinal
- *  - Ponto de extensão para cache com TTL / revalidação automática
+ * Production considerations already included:
+ *  - error() and errorMessage() to expose loader-thrown errors
+ *  - boolean flags for loading/error/resolved
+ *  - deep-freeze of params for immutability
+ *  - logging of every load attempt, status change, and error
  */
 @Injectable({ providedIn: 'root' })
 export abstract class ResourceStore<T, P extends Record<string, any> | void> {
-  /**
-   * O sinal interno que guarda nossos parâmetros atuais (P).
-   * Se P = void, getInitialParams() deve retornar undefined.
-   */
+  /** Holds the current params (P). If P = void, getInitialParams() returns undefined. */
   protected readonly paramsSignal: WritableSignal<P> =
     signal<P>(this._deepFreezeParams(this.getInitialParams()));
 
   /**
-   * O ResourceRef<T> que executa loader sempre que paramsSignal() muda.
-   * O defaultValue faz com que value() NUNCA retorne undefined.
+   * ResourceRef<T> performs the loader whenever paramsSignal() changes.
+   * defaultValue guarantees that value() never returns undefined.
    */
   protected readonly resourceRef: ResourceRef<T> = resource<T, P>({
     params: () => this.paramsSignal(),
@@ -52,73 +49,63 @@ export abstract class ResourceStore<T, P extends Record<string, any> | void> {
       const logger = this.logger;
       logger.info(`${this.constructor.name}: loader() invoked with params=`, params);
       try {
-        // Chama o método concreto que faz fetch na API
         const result = await this.loadFromApi(params as P);
-        // Congela o objeto retornado para manter imutabilidade
-        return Object.freeze(result as T);
+        this._updateLastFetch(); // Record when fetch succeeded
+        return Object.freeze(result as T); // Freeze for immutability
       } catch (err: unknown) {
         logger.error(`${this.constructor.name}: loader() error for params=`, params, err);
-        throw err; // dispara status() === 'error' no ResourceRef
+        throw err; // Causes status() === 'error'
       }
     },
     defaultValue: this.getDefaultValue()
   });
 
-  /** Sinal somente‐leitura contendo o valor atual carregado (ou defaultValue) */
+  /** Read-only signal for the loaded value (or defaultValue). */
   readonly value: Signal<T> = computed(() => this.resourceRef.value());
 
-  /** Sinal somente‐leitura contendo status: 'idle' | 'loading' | 'resolved' | 'error' */
+  /** Read-only signal for Resource status: 'idle' | 'loading' | 'resolved' | 'error' */
   readonly status: Signal<ResourceStatus> = computed(() => this.resourceRef.status());
 
-  /**
-   * Sinal somente‐leitura contendo o erro lançado (se houver).
-   * No Angular 20+, ResourceRef<T> expõe .error() caso loader tenha lançado.
-   */
+  /** Read-only signal for any thrown error (if loader threw). */
   readonly error: Signal<unknown> = computed(() => this.resourceRef.error());
 
-  /**
-   * Sinal somente‐leitura contendo mensagem amigável de erro (string|null).
-   * Por padrão, usamos .error()?.message; subclasses podem estender para mapeamentos custom.
-   */
+  /** Read-only signal for a friendly error message (string|null). */
   readonly errorMessage: Signal<string | null> = computed(() => {
     const err = this.error();
-    if (err == null) {
-      return null;
-    }
-    // Se err for Error, retorne err.message; senão, toString()
+    if (err == null) return null;
     return err instanceof Error ? err.message : String(err);
   });
 
-  /** Flag booleana para facilitar uso em templates (status === 'loading') */
+  /** Boolean flags for convenience in templates or logic */
   readonly isLoading: Signal<boolean> = computed(() => this.status() === 'loading');
-
-  /** Flag booleana (status === 'error') */
   readonly isError: Signal<boolean> = computed(() => this.status() === 'error');
-
-  /** Flag booleana (status === 'resolved') */
   readonly isResolved: Signal<boolean> = computed(() => this.status() === 'resolved');
 
-  /** LoggingService e logger específico desta classe */
+  /** LoggingService and scoped logger for this store */
   protected readonly loggingService = inject(LoggingService);
   protected readonly logger: ScopedLogger =
     this.loggingService.scoped((this.constructor as { name: string }).name);
 
+  /** Timestamp (in ms) of the last successful fetch; used for TTL logic */
+  private lastFetchTimestamp: number | null = null;
+
+  /** Reference to the scheduled TTL timer; call clearTimeout on this when needed */
+  private ttlTimer: ReturnType<typeof setTimeout> | null = null;
+
   constructor() {
-    // Registra automaticamente mudanças em value()
+    // Log whenever value() changes
     effect(() => {
       const v = this.value();
-      // Opcional: não logar o defaultValue inicial (p. ex. JSON de "Loading…")
-      // Poderíamos checar if (this.status() !== 'idle') antes de logar
       this.logger.debug(`${this.constructor.name}: value updated →`, v);
     });
 
-    // Registra automaticamente mudanças em status()
+    // Log whenever status() changes
     effect(() => {
       const s = this.status();
       this.logger.debug(`${this.constructor.name}: status changed →`, s);
     });
 
-    // Registra automaticamente a mensagem de erro caso status() === 'error'
+    // Log error whenever status switches to 'error'
     effect(() => {
       if (this.isError()) {
         this.logger.warn(
@@ -128,53 +115,112 @@ export abstract class ResourceStore<T, P extends Record<string, any> | void> {
       }
     });
 
-    // TODO: Se quiser implementar TTL / revalidação automática:
-    // effect(() => {
-    //   const s = this.status();
-    //   if (s === 'resolved') {
-    //     // compare lastFetchTimestamp + ttl < Date.now()
-    //     // this.logger.info(`${this.constructor.name}: TTL expired, reloading`);
-    //     // this.reload();
-    //   }
-    // });
+    // When status becomes 'resolved', schedule a reload after TTL
+    effect(() => {
+      if (this.isResolved()) {
+        this._scheduleTtlReload();
+      } else {
+        this._clearTtlTimer();
+      }
+    });
   }
 
   /**
-   * Cada subclasse deve informar:
-   * 1) O parâmetro inicial (P) ou undefined (caso P = void)
-   * 2) O defaultValue para T (para que value() nunca seja undefined)
-   * 3) Como carregar T a partir de P (Promise<T>)
+   * Subclasses must provide:
+   *  1) An initial P (for example, { id: 1 }). If no params, return undefined.
+   *  2) A defaultValue for T (frozen) so that value() never is undefined.
+   *  3) The logic to call the API, returning Promise<T>.
    */
 
-  /** Retorna o valor inicial de P (por exemplo, { id: 1 }) ou undefined se P = void */
+  /** Called by constructor to set the initial paramsSignal. */
   protected abstract getInitialParams(): P;
 
-  /** Retorna o defaultValue de T (deve ser imutável/`Object.freeze`) */
+  /** Called by resource options; must return a frozen instance of T. */
   protected abstract getDefaultValue(): T;
 
-  /** Executa a chamada real à API e retorna Promise<T> */
+  /** Called by loader; must return a Promise<T> with data from API. */
   protected abstract loadFromApi(params: P): Promise<T>;
 
   /**
-   * Método público para alterar P e disparar reload automático.
-   * Por exemplo, setParams({ id: 5 }) ou setParams(undefined) se P = void.
+   * Change params (P) and trigger reload automatically.
+   * For example: setParams({ id: 5 }) or setParams(undefined) if P = void.
+   * Cancels any pending TTL timer.
    */
   setParams(newParams: P): void {
     this.logger.info(`${this.constructor.name}: setParams →`, newParams);
+    this._clearTtlTimer();
     this.paramsSignal.set(this._deepFreezeParams(newParams));
   }
 
   /**
-   * Força recarga do resource mesmo que paramsSignal() não tenha mudado.
+   * Force a reload of the current params, even if unchanged.
+   * Cancels any pending TTL timer.
    */
   reload(): void {
     this.logger.info(`${this.constructor.name}: reload()`);
+    this._clearTtlTimer();
     this.resourceRef.reload();
   }
 
   /**
-   * Garante imutabilidade de P (recursivamente faz Object.freeze).
-   * Se P = void ou valor primitivo, retorna diretamente.
+   * Returns TTL in milliseconds. If <= 0, TTL is disabled.
+   * Subclasses may override to provide a positive TTL.
+   */
+  protected getTtlMs(): number {
+    return 0;
+  }
+
+  /** Update timestamp after a successful fetch (called inside loader). */
+  private _updateLastFetch(): void {
+    this.lastFetchTimestamp = Date.now();
+  }
+
+  /**
+   * Schedule a reload once TTL expires.
+   * If TTL <= 0, does nothing. If TTL has already passed, reload immediately.
+   */
+  private _scheduleTtlReload(): void {
+    const ttl = this.getTtlMs();
+    if (ttl <= 0) {
+      return;
+    }
+
+    // Cancel any existing timer
+    if (this.ttlTimer) {
+      this._clearTtlTimer();
+    }
+
+    // Calculate elapsed time since last successful fetch
+    const elapsed = this.lastFetchTimestamp ? Date.now() - this.lastFetchTimestamp : Infinity;
+    const delayMs = ttl - elapsed;
+
+    if (delayMs <= 0) {
+      // TTL already expired; reload immediately
+      this.logger.info(`${this.constructor.name}: TTL expired, reloading immediately`);
+      this.reload();
+    } else {
+      // Schedule a reload after delayMs
+      this.logger.debug(
+        `${this.constructor.name}: scheduling reload in ${delayMs}ms (TTL)`
+      );
+      this.ttlTimer = setTimeout(() => {
+        this.logger.info(`${this.constructor.name}: TTL reached, reloading resource`);
+        this.reload();
+      }, delayMs);
+    }
+  }
+
+  /** Cancel any scheduled TTL timer. */
+  private _clearTtlTimer(): void {
+    if (this.ttlTimer) {
+      clearTimeout(this.ttlTimer);
+      this.ttlTimer = null;
+    }
+  }
+
+  /**
+   * Recursively freeze the params object to enforce immutability.
+   * If P is primitive or void, just return it.
    */
   private _deepFreezeParams(obj: P): P {
     if (obj === null || obj === undefined || typeof obj !== 'object') {

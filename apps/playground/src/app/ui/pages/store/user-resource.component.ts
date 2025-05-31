@@ -1,4 +1,4 @@
-// src/app/features/users/user-profile.component.ts
+// src/app/features/users/user-resource.component.ts
 import { Component, inject } from '@angular/core';
 import { UserResourceStore } from './features/users/user.resource-store';
 import { ButtonModule } from 'primeng/button';
