@@ -55,6 +55,11 @@ export class LoggingService {
     console.log(message, ...optionalParams);
   }
 
+  public info(message?: unknown, ...optionalParams: unknown[]): void {
+    if (!this.shouldLog('info')) return;
+    console.log(message, ...optionalParams);
+  }
+
   public warn(message?: unknown, ...optionalParams: unknown[]): void {
     if (!this.shouldLog('warn')) return;
     console.warn(message, ...optionalParams);
@@ -78,6 +83,10 @@ export class LoggingService {
     const prefix = `[${owner}]`;
     return {
       log: (msg?: unknown, ...params: unknown[]) => {
+        if (!this.shouldLog('info', owner)) return;
+        console.log(prefix, msg, ...params);
+      },
+      info: (msg?: unknown, ...params: unknown[]) => {
         if (!this.shouldLog('info', owner)) return;
         console.log(prefix, msg, ...params);
       },
