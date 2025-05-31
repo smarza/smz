@@ -20,7 +20,7 @@ export class UserResourceStore extends ResourceStore<User, UserParams>
   /** 1) Parâmetros iniciais: queremos começar carregando o usuário com ID = 1 */
   protected getInitialParams(): UserParams
   {
-    return { id: 1 };
+    return { id: 10 };
   }
 
   /** 2) Valor padrão exibido enquanto o real não chega (forme imutável) */
