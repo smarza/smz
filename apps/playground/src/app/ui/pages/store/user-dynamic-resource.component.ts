@@ -35,6 +35,7 @@ import { USER_RESOURCE_STORE_TOKEN } from './core/resource-store-tokens';
   }
 
   <p>Status: {{ store.status() }}</p>
+  <button pButton type="button" (click)="store.reload()">Reload User</button>
   <button pButton type="button" (click)="store.setParams({ id: store.value().id + 1 })">Next User</button>
   `
 })
