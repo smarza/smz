@@ -39,12 +39,12 @@ export abstract class GlobalStore<T> {
   constructor() {
     effect(() => {
       const s = this.stateSignal();
-      this.logger.debug(`${this.constructor.name}: state updated →`, s);
+      this.logger.debug(`state updated →`, s);
     });
 
     effect(() => {
       const st = this.statusSignal();
-      this.logger.debug(`${this.constructor.name}: status changed →`, st);
+      this.logger.debug(`status changed →`, st);
     });
 
     effect(() => {
@@ -67,7 +67,7 @@ export abstract class GlobalStore<T> {
   }
 
   async reload(): Promise<void> {
-    this.logger.info(`${this.constructor.name}: reload()`);
+    this.logger.info(`reload()`);
     this._clearTtlTimer();
     this.statusSignal.set('loading');
     this.errorSignal.set(null);
@@ -84,7 +84,7 @@ export abstract class GlobalStore<T> {
   }
 
   updateState(partial: Partial<T>): void {
-    this.logger.info(`${this.constructor.name}: updateState`, partial);
+    this.logger.info(`updateState`, partial);
     this.stateSignal.update((s) => this._deepFreeze({ ...(s as any), ...partial }));
   }
 
@@ -99,12 +99,12 @@ export abstract class GlobalStore<T> {
     const elapsed = this.lastFetchTimestamp ? Date.now() - this.lastFetchTimestamp : Infinity;
     const delayMs = ttl - elapsed;
     if (delayMs <= 0) {
-      this.logger.info(`${this.constructor.name}: TTL expired, reloading immediately`);
+      this.logger.info(`TTL expired, reloading immediately`);
       void this.reload();
     } else {
-      this.logger.debug(`${this.constructor.name}: scheduling reload in ${delayMs}ms (TTL)`);
+      this.logger.debug(`scheduling reload in ${delayMs}ms (TTL)`);
       this.ttlTimer = setTimeout(() => {
-        this.logger.info(`${this.constructor.name}: TTL reached, reloading`);
+        this.logger.info(`TTL reached, reloading`);
         void this.reload();
       }, delayMs);
     }

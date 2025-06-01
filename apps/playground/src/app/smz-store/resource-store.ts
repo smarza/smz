@@ -47,7 +47,7 @@ export abstract class ResourceStore<T, P extends Record<string, any> | void> {
     params: () => this.paramsSignal(),
     loader: async ({ params }) => {
       const logger = this.logger;
-      logger.info(`${this.constructor.name}: loader invoked with params=`, params);
+      logger.info(`loader invoked with params=`, params);
       try {
         const result = await this.loadFromApi(params as P);
         this._updateLastFetch();
@@ -59,11 +59,7 @@ export abstract class ResourceStore<T, P extends Record<string, any> | void> {
             ? err
             : new Error(typeof err === 'object' ? JSON.stringify(err) : String(err));
 
-        logger.error(
-          `${this.constructor.name}: loader error for params=`,
-          params,
-          wrappedError
-        );
+        logger.error(`loader error for params=`, params, wrappedError);
 
         // Ao invés de lançar, registramos no errorSignal e retornamos defaultValue
         this.errorSignal.set(wrappedError);
@@ -123,13 +119,13 @@ export abstract class ResourceStore<T, P extends Record<string, any> | void> {
     // 5) Logs automáticos sobre valueRaw
     effect(() => {
       const v = this.valueRaw();
-      this.logger.debug(`${this.constructor.name}: valueRaw updated →`, v);
+      this.logger.debug(`valueRaw updated →`, v);
     });
 
     // 6) Logs automáticos sobre statusRaw
     effect(() => {
       const s = this.statusRaw();
-      this.logger.debug(`${this.constructor.name}: statusRaw changed →`, s);
+      this.logger.debug(`statusRaw changed →`, s);
     });
 
     // 7) Quando raw entra em erro (statusRaw = 'error') ou errorSignal se torna != null,
@@ -137,7 +133,7 @@ export abstract class ResourceStore<T, P extends Record<string, any> | void> {
     effect(() => {
       if (this.errorSignal()) {
         const e = this.errorSignal();
-        this.logger.warn(`${this.constructor.name}: errorSignal set →`, e);
+        this.logger.warn(`errorSignal set →`, e);
         this._clearTtlTimer();
       }
     });
@@ -173,7 +169,7 @@ export abstract class ResourceStore<T, P extends Record<string, any> | void> {
    * Cancela timer de TTL se houver.
    */
   setParams(newParams: P): void {
-    this.logger.info(`${this.constructor.name}: setParams →`, newParams);
+    this.logger.info(`setParams →`, newParams);
     this._clearTtlTimer();
     // Limpa qualquer erro anterior antes de mudar o parâmetro
     this.errorSignal.set(null);
@@ -185,7 +181,7 @@ export abstract class ResourceStore<T, P extends Record<string, any> | void> {
    * Também limpa errorSignal antes de recarregar.
    */
   reload(): void {
-    this.logger.info(`${this.constructor.name}: reload()`);
+    this.logger.info(`reload()`);
     this._clearTtlTimer();
     this.errorSignal.set(null);
     this.resourceRef.reload();
@@ -225,14 +221,12 @@ export abstract class ResourceStore<T, P extends Record<string, any> | void> {
     const delayMs = ttl - elapsed;
 
     if (delayMs <= 0) {
-      this.logger.info(`${this.constructor.name}: TTL expired, reloading immediately`);
+      this.logger.info(`TTL expired, reloading immediately`);
       this.reload();
     } else {
-      this.logger.debug(
-        `${this.constructor.name}: scheduling reload in ${delayMs}ms (TTL)`
-      );
+      this.logger.debug(`scheduling reload in ${delayMs}ms (TTL)`);
       this.ttlTimer = setTimeout(() => {
-        this.logger.info(`${this.constructor.name}: TTL reached, reloading`);
+        this.logger.info(`TTL reached, reloading`);
         this.reload();
       }, delayMs);
     }

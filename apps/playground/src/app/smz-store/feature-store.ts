@@ -16,18 +16,18 @@ export abstract class FeatureStore<T> extends GlobalStore<T> implements OnDestro
   }
 
   ngOnDestroy(): void {
-    this.logger.debug(`${this.constructor.name}: destroying`);
+    this.logger.debug(`destroying`);
     (this as any)._clearTtlTimer?.();
   }
 
   pauseTtl(): void {
-    this.logger.debug(`${this.constructor.name}: pausing TTL`);
+    this.logger.debug(`pausing TTL`);
     this._ttlPaused = true;
     (this as any)._clearTtlTimer?.();
   }
 
   resumeTtl(): void {
-    this.logger.debug(`${this.constructor.name}: resuming TTL`);
+    this.logger.debug(`resuming TTL`);
     this._ttlPaused = false;
     (this as any)._scheduleTtlReload?.();
   }
