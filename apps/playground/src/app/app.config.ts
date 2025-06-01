@@ -15,6 +15,7 @@ import { appFooter } from './layout/app.footer';
 import { appTopbar } from './layout/app.topbar';
 import { appLayout } from './layout/app.layout';
 import { userStoreProvider } from './ui/pages/user-resource/user-resource-store.provider';
+import { authGlobalStoreProvider } from './ui/pages/global-store-demo/auth-global-store.provider';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -40,6 +41,7 @@ export const appConfig: ApplicationConfig = {
       const config = inject(SMZ_UI_LAYOUT_CONFIG);
       config.hasClaim = () => true;
     }),
-    userStoreProvider
+    userStoreProvider,
+    authGlobalStoreProvider
   ],
 };

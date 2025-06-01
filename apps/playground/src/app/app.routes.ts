@@ -4,6 +4,7 @@ import { HomePageComponent } from './ui/pages/home-page.component';
 import { UserResourceComponent } from './ui/pages/user-resource/user-resource.component';
 import { CounterFeatureComponent } from './ui/pages/feature-store/counter-feature.component';
 import { counterFeatureStoreProvider } from './ui/pages/feature-store/counter-feature-store.provider';
+import { GlobalStoreDemoComponent } from './ui/pages/global-store-demo/global-store-demo.component';
 
 export const appRoutes: Route[] = [
   {
@@ -27,6 +28,7 @@ export const appRoutes: Route[] = [
             data: { title: 'Feature Store Demo' },
             providers: [counterFeatureStoreProvider],
           },
+          { path: 'global-store', component: GlobalStoreDemoComponent, data: { title: 'Global Store Demo' } },
           { path: '', redirectTo: 'home', pathMatch: 'full' },
         ]
       },
