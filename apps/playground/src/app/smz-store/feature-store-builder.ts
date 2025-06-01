@@ -1,4 +1,4 @@
-import { EnvironmentInjector, InjectionToken, Provider } from '@angular/core';
+import { DestroyRef, EnvironmentInjector, InjectionToken, Provider } from '@angular/core';
 import { GenericFeatureStore } from './generic-feature-store';
 
 export class FeatureStoreBuilder<T> {
@@ -26,16 +26,17 @@ export class FeatureStoreBuilder<T> {
   }
 
   buildProvider(token: InjectionToken<GenericFeatureStore<T>>, extraDeps: any[] = []): Provider {
-    const depsArray = [EnvironmentInjector, ...extraDeps];
+    const depsArray = [EnvironmentInjector, DestroyRef, ...extraDeps];
     return {
       provide: token,
-      useFactory: (env: EnvironmentInjector, ...injectedDeps: any[]) => {
+      useFactory: (env: EnvironmentInjector, destroyRef: DestroyRef, ...injectedDeps: any[]) => {
         const loader = () => this._loaderFn(...injectedDeps);
         const store = new GenericFeatureStore<T>({
           initialState: this._initialState,
           loaderFn: loader,
           ttlMs: this._ttlMs,
         });
+        destroyRef.onDestroy(() => store.ngOnDestroy());
         void store.reload();
         return store;
       },
