@@ -57,3 +57,15 @@ Angular CLI does not come with an end-to-end testing framework by default. You c
 ## Additional Resources
 
 For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+
+## Prompt
+
+I'm using the Playground project to explorer some ideas to be implemented in my smz-store library.
+
+After polish all the store architecture I will move the code to the library and leave only the client demo code on the playground.
+
+The Store will have main 3 features: Resource Store, Global Store, Feature Store.
+
+1. Resource Store: this store represents the readonly that that the application will be consuming as resource. This Store is injected globally in the application and can be consumed anytime. The Resource store . For example, a list of something to be used in a dropdown list, or a schema list, or any entity list that doesn't change much.
+
+2. Global Store,

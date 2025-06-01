@@ -1,14 +1,13 @@
 // src/app/features/users/user-resource.component.ts
-import { Component, inject, Inject } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { ButtonModule } from 'primeng/button';
-import { UserParams } from './core/resource-store-tokens';
-import { User } from './core/resource-store-tokens';
-import { GenericResourceStore } from './core/generic-resource-store';
-import { USER_RESOURCE_STORE_TOKEN } from './core/resource-store-tokens';
 import { CommonModule } from '@angular/common';
+import { User } from './user.model';
+import { USER_RESOURCE_STORE_TOKEN, UserParams } from './user-resource-store.provider';
+import { GenericResourceStore } from '../../../smz-store/generic-resource-store';
 
 @Component({
-  selector: 'app-user-dynamic-resource',
+  selector: 'app-user-resource',
   imports: [CommonModule, ButtonModule],
   host: { class: 'flex flex-col gap-4' },
   template: `
@@ -49,7 +48,7 @@ import { CommonModule } from '@angular/common';
   }
   `
 })
-export class UserDynamicResourceComponent {
+export class UserResourceComponent {
   public readonly store: GenericResourceStore<User, UserParams> = inject(USER_RESOURCE_STORE_TOKEN);
 
   public nextUser() {

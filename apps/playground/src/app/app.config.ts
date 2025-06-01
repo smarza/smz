@@ -2,7 +2,7 @@ import { provideClientHydration, withEventReplay } from '@angular/platform-brows
 import { ApplicationConfig, inject, provideAppInitializer, provideBrowserGlobalErrorListeners, provideZonelessChangeDetection } from '@angular/core';
 import { provideRouter, withEnabledBlockingInitialNavigation, withInMemoryScrolling } from '@angular/router';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
-import { provideHttpClient, withInterceptors } from '@angular/common/http';
+import { provideHttpClient } from '@angular/common/http';
 import { withFetch } from '@angular/common/http';
 import { providePrimeNG } from 'primeng/config';
 import Aura from '@primeng/themes/aura';
@@ -14,8 +14,7 @@ import { appSidebar } from './layout/app.sidebar';
 import { appFooter } from './layout/app.footer';
 import { appTopbar } from './layout/app.topbar';
 import { appLayout } from './layout/app.layout';
-import { authInterceptor } from './ui/pages/store/features/auth/auth.interceptor';
-import { userStoreProvider } from './ui/pages/store/core/user-resource-store.provider';
+import { userStoreProvider } from './ui/pages/user-resource/user-resource-store.provider';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -24,7 +23,7 @@ export const appConfig: ApplicationConfig = {
     // provideZoneChangeDetection({ eventCoalescing: true }),
     provideRouter(appRoutes, withInMemoryScrolling({ anchorScrolling: 'enabled', scrollPositionRestoration: 'enabled' }), withEnabledBlockingInitialNavigation()),
     provideClientHydration(withEventReplay()),
-    provideHttpClient(withFetch(), withInterceptors([authInterceptor])),
+    provideHttpClient(withFetch()),
     provideAnimationsAsync(),
     providePrimeNG({ theme: { preset: Aura, options: { darkModeSelector: '.app-dark' } } }),
     provideSmzLayoutLogging(() => [{ logging: appLoggingLayout }]),

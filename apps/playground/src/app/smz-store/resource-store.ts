@@ -13,19 +13,19 @@ import { ResourceStatus } from '@angular/core';
 import { LoggingService, ScopedLogger } from '@smz-ui/layout';
 
 /**
- * Generic base class for any store that loads a single “resource” T
+ * Generic base class for any store that loads a single "resource" T
  * based on a parameter object P.
  *
  * T = type of data returned by the API (e.g. User, Post[])
- * P = “params” object used to drive the loader (e.g. { id: number }). If no params, use P = void.
+ * P = "params" object used to drive the loader (e.g. { id: number }). If no params, use P = void.
  *
  * This class sets up:
  *  - A WritableSignal<P> called paramsSignal
  *  - A ResourceRef<T> called resourceRef (internally atualiza valueRaw e statusRaw)
- *  - Signals “value”, “status” que combinam raw + errorSignal
- *  - Signals “errorSignal” e “errorMessage”
- *  - Boolean flags “isLoading”, “isError”, “isResolved”
- *  - auto‐logging effects of changes em valueRaw, statusRaw e errorSignal
+ *  - Signals "value", "status" que combinam raw + errorSignal
+ *  - Signals "errorSignal" e "errorMessage"
+ *  - Boolean flags "isLoading", "isError", "isResolved"
+ *  - auto-logging effects of changes em valueRaw, statusRaw e errorSignal
  *  - public methods setParams(...) e reload()
  *  - TTL/revalidação opcional
  *
@@ -36,11 +36,11 @@ import { LoggingService, ScopedLogger } from '@smz-ui/layout';
  */
 @Injectable({ providedIn: 'root' })
 export abstract class ResourceStore<T, P extends Record<string, any> | void> {
-  // 1) Sinal interno para parâmetros (P), já “frozen” para garantir imutabilidade
+  // 1) Sinal interno para parâmetros (P), já "frozen" para garantir imutabilidade
   protected readonly paramsSignal: WritableSignal<P> =
     signal<P>(this._deepFreezeParams(this.getInitialParams()));
 
-  // 2) ResourceRef<T> é a “versão bruta” do recurso:
+  // 2) ResourceRef<T> é a "versão bruta" do recurso:
   //    - loaderRaw faz fetch (ou catch + defaultValue)
   //    - valueRaw e statusRaw são gerenciados por ResourceRef
   protected readonly resourceRef: ResourceRef<T> = resource<T, P>({
@@ -73,14 +73,14 @@ export abstract class ResourceStore<T, P extends Record<string, any> | void> {
     defaultValue: this.getDefaultValue()
   });
 
-  // 3) Sinais “raw” gerenciados pelo resourceRef:
+  // 3) Sinais "raw" gerenciados pelo resourceRef:
   private readonly valueRaw: Signal<T> = computed(() => this.resourceRef.value());
   private readonly statusRaw: Signal<ResourceStatus> = computed(() => this.resourceRef.status());
 
   // 4) errorSignal próprio para registrar o erro real (HttpErrorResponse ou Error)
   private readonly errorSignal: WritableSignal<Error | null> = signal<Error | null>(null);
 
-  /** value() expõe valueRaw, ou defaultValue se estivermos em “error” */
+  /** value() expõe valueRaw, ou defaultValue se estivermos em "error" */
   readonly value: Signal<T> = computed(() => {
     // Se houver um errorSignal, devolve defaultValue (que já é valueRaw nesse caso)
     return this.errorSignal() ? this.getDefaultValue() : this.valueRaw();
@@ -136,7 +136,7 @@ export abstract class ResourceStore<T, P extends Record<string, any> | void> {
     //    mostramos log e garantimos que o timer de TTL seja cancelado.
     effect(() => {
       if (this.errorSignal()) {
-        const e = this.errorSignal()!;
+        const e = this.errorSignal();
         this.logger.warn(`${this.constructor.name}: errorSignal set →`, e);
         this._clearTtlTimer();
       }
@@ -255,11 +255,12 @@ export abstract class ResourceStore<T, P extends Record<string, any> | void> {
     if (obj === null || obj === undefined || typeof obj !== 'object') {
       return obj;
     }
-    Object.freeze(obj as any);
-    for (const key of Object.keys(obj as any)) {
-      const val = (obj as any)[key];
+    const objAsRecord = obj as Record<string, unknown>;
+    Object.freeze(objAsRecord);
+    for (const key of Object.keys(objAsRecord)) {
+      const val = objAsRecord[key];
       if (val && typeof val === 'object' && !Object.isFrozen(val)) {
-        this._deepFreezeParams(val as any);
+        this._deepFreezeParams(val as P);
       }
     }
     return obj;
