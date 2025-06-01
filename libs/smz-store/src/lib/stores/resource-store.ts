@@ -10,7 +10,7 @@ import {
 } from '@angular/core';
 import { resource, ResourceRef } from '@angular/core';
 import { ResourceStatus } from '@angular/core';
-import { LoggingService, ScopedLogger } from '@smz-ui/layout';
+import { LoggingService, ScopedLogger } from '@smz-ui/core';
 
 /**
  * Generic base class for any store that loads a single "resource" T

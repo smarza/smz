@@ -3,9 +3,7 @@ import { Injectable, signal, computed, inject } from '@angular/core';
 import { Location } from '@angular/common';
 import { Router, NavigationEnd } from '@angular/router';
 import { filter } from 'rxjs/operators';
-import { LoggingService } from '../../logging/logging.service';
-import { LoggingScope } from '../../logging/logging-scope';
-import { ScopedLogger } from '../../logging/scoped-logger';
+import { LoggingService, LoggingScope, ScopedLogger } from '@smz-ui/core';
 
 @Injectable({ providedIn: 'root' })
 export class NavigationService {

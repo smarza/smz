@@ -7,7 +7,7 @@ import {
   effect,
   signal,
 } from '@angular/core';
-import { LoggingService, ScopedLogger } from '@smz-ui/layout';
+import { LoggingService, ScopedLogger } from '@smz-ui/core';
 
 export type GlobalStoreStatus = 'idle' | 'loading' | 'resolved' | 'error';
 

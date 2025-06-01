@@ -8,6 +8,12 @@
   "targets": {
     "build": {
       "executor": "@nx/angular:ng-packagr-lite",
+      "dependsOn": [
+        {
+          "target": "build",
+          "projects": ["smz-core"]
+        }
+      ],
       "outputs": ["{workspaceRoot}/dist/{projectRoot}"],
       "options": {
         "project": "libs/smz-forms/ng-package.json"

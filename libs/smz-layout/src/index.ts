@@ -18,10 +18,3 @@ export { ErrorPagesConfigService } from './lib/errors/errors-pages-service';
 
 export { LayoutService } from './lib/layout/service/layout.service';
 export type { LayoutConfig, LayoutState } from './lib/layout/service/layout.service';
-
-// LOGGING
-export * from './lib/logging/config';
-export { LoggingService } from './lib/logging/logging.service';
-export { LoggingScope } from './lib/logging/logging-scope';
-export type { LoggingConfig } from './lib/logging/logging-config';
-export type { ScopedLogger } from './lib/logging/scoped-logger';
