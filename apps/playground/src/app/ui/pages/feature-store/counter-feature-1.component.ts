@@ -2,7 +2,7 @@ import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ButtonModule } from 'primeng/button';
 import { GenericFeatureStore } from '../../../smz-store/generic-feature-store';
-import { COUNTER_FEATURE_STORE_TOKEN, CounterState } from './counter-feature-store.provider';
+import { COUNTER_FEATURE_1_STORE_TOKEN, CounterState } from './counter-feature-1-store.provider';
 
 @Component({
   selector: 'app-counter-feature-1',
@@ -22,7 +22,7 @@ import { COUNTER_FEATURE_STORE_TOKEN, CounterState } from './counter-feature-sto
   `
 })
 export class CounterFeature1Component {
-  public readonly store: GenericFeatureStore<CounterState> = inject(COUNTER_FEATURE_STORE_TOKEN);
+  public readonly store: GenericFeatureStore<CounterState> = inject(COUNTER_FEATURE_1_STORE_TOKEN);
 
   increment() {
     const current = this.store.state().count;
