@@ -1,7 +1,7 @@
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ButtonModule } from 'primeng/button';
-import { GenericGlobalStore } from '../../../smz-store/generic-global-store';
+import { GenericGlobalStore } from '@smz-ui/store';
 import { AUTH_GLOBAL_STORE_TOKEN } from './auth-global-store.provider';
 import { AuthState } from './auth.model';
 
