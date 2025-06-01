@@ -36,9 +36,6 @@ export const userStoreProvider = (() => {
         throw new Error(httpErr.message ?? 'Erro desconhecido');
       })
     )
-    .withLoaderFn((params: UserParams, api: UserApiService) =>
-      api.getUserById(params.id)
-    )
     .addDependency(UserApiService)
     // 4) TTL de 2 minutos (120000 ms)
     .withTtlMs(2 * 60 * 1000);
