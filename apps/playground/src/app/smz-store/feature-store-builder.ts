@@ -37,12 +37,14 @@ export class FeatureStoreBuilder<T> {
         router: Router,
         ...injectedDeps: any[]
       ) => {
+
         const loader = () => this._loaderFn(...injectedDeps);
         const store = new GenericFeatureStore<T>({
           initialState: this._initialState,
           loaderFn: loader,
           ttlMs: this._ttlMs,
         });
+
         const initialUrl = router.url;
         const sub = router.events
           .pipe(filter((ev) => ev instanceof NavigationStart || ev instanceof NavigationEnd))
@@ -62,6 +64,7 @@ export class FeatureStoreBuilder<T> {
           sub.unsubscribe();
           store.ngOnDestroy();
         });
+
         void store.reload();
         return store;
       },
