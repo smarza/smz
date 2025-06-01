@@ -29,14 +29,15 @@ export abstract class GlobalStore<T> {
   readonly isResolved = computed(() => this.status() === 'resolved');
 
   protected readonly loggingService = inject(LoggingService);
-  protected readonly logger: ScopedLogger = this.loggingService.scoped(
-    (this.constructor as { name: string }).name
-  );
+  protected logger: ScopedLogger;
 
   private ttlTimer: ReturnType<typeof setTimeout> | null = null;
   private lastFetchTimestamp: number | null = null;
 
-  constructor() {
+  constructor(scopeName?: string) {
+    this.logger = this.loggingService.scoped(
+      scopeName ?? (this.constructor as { name: string }).name
+    );
     effect(() => {
       const s = this.stateSignal();
       this.logger.debug(`state updated →`, s);

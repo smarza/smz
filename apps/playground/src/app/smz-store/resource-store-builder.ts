@@ -14,6 +14,7 @@ export class ResourceStoreBuilder<
   private _defaultValue!: T;
   private _loaderFn!: (params: P, ...deps: any[]) => Promise<T>;
   private _ttlMs = 0;
+  private _name!: string;
 
   /**
    * Configura os parâmetros iniciais (P).
@@ -38,6 +39,11 @@ export class ResourceStoreBuilder<
    */
   withLoaderFn(loaderFn: (params: P, ...deps: any[]) => Promise<T>): this {
     this._loaderFn = loaderFn;
+    return this;
+  }
+
+  withName(name: string): this {
+    this._name = name;
     return this;
   }
 
@@ -85,6 +91,7 @@ export class ResourceStoreBuilder<
 
         // Instancia o GenericResourceStore
         const store = new GenericResourceStore<T, P>({
+          scopeName: this._name ?? (token as any).desc ?? token.toString(),
           initialParams: this._initialParams,
           defaultValue: this._defaultValue,
           loaderFn: adaptedLoader,

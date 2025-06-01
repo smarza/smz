@@ -23,13 +23,14 @@ export class GenericResourceStore<T, P extends Record<string, any> | void>
   private readonly _ttlMs: number;
 
   constructor(options: {
+    scopeName: string;
     initialParams: P;
     defaultValue: T;
     loaderFn: (params: P) => Promise<T>;
     ttlMs?: number;
   }) {
     // Chama o construtor de ResourceStore (que já configura sinais, efeitos e logger)
-    super();
+    super(options.scopeName);
     this._initialParams = options.initialParams;
     this._defaultValue = options.defaultValue;
     this._loaderFn = options.loaderFn;

@@ -6,11 +6,12 @@ export class GenericGlobalStore<T> extends GlobalStore<T> {
   private readonly _ttlMs: number;
 
   constructor(options: {
+    scopeName: string;
     initialState: T;
     loaderFn: () => Promise<Partial<T>>;
     ttlMs?: number;
   }) {
-    super();
+    super(options.scopeName);
     this._initialState = options.initialState;
     this._loaderFn = options.loaderFn;
     this._ttlMs = options.ttlMs ?? 0;
