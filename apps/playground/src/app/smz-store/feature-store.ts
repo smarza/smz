@@ -8,6 +8,7 @@ import { GlobalStore } from './global-store';
 @Injectable()
 export abstract class FeatureStore<T> extends GlobalStore<T> implements OnDestroy {
   private readonly destroyRef = inject(DestroyRef);
+  private _ttlPaused = false;
 
   constructor() {
     super();
@@ -17,4 +18,15 @@ export abstract class FeatureStore<T> extends GlobalStore<T> implements OnDestro
   ngOnDestroy(): void {
     (this as any)._clearTtlTimer?.();
   }
+
+  pauseTtl(): void {
+    this._ttlPaused = true;
+    (this as any)._clearTtlTimer?.();
+  }
+
+  resumeTtl(): void {
+    this._ttlPaused = false;
+    (this as any)._scheduleTtlReload?.();
+  }
+
 }
