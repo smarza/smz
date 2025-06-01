@@ -72,7 +72,7 @@
       "dependsOn": [
         {
           "target": "build",
-          "projects": ["smz-core", "smz-layout", "smz-forms", "smz-store"]
+          "projects": ["@smz-ui/core", "@smz-ui/layout", "@smz-ui/forms", "@smz-ui/store"]
         }
       ],
       "configurations": {

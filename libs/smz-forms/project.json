@@ -1,17 +1,24 @@
 {
-  "name": "smz-forms",
+  "name": "@smz-ui/forms",
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
   "sourceRoot": "libs/smz-forms/src",
   "prefix": "lib",
   "projectType": "library",
+  "release": {
+    "version": {
+      "manifestRootsToUpdate": ["dist/{projectRoot}"],
+      "currentVersionResolver": "git-tag",
+      "fallbackCurrentVersionResolver": "disk"
+    }
+  },
   "tags": [],
   "targets": {
     "build": {
-      "executor": "@nx/angular:ng-packagr-lite",
+      "executor": "@nx/angular:package",
       "dependsOn": [
         {
           "target": "build",
-          "projects": ["smz-core"]
+          "projects": ["@smz-ui/core"]
         }
       ],
       "outputs": ["{workspaceRoot}/dist/{projectRoot}"],
@@ -27,6 +34,11 @@
         }
       },
       "defaultConfiguration": "production"
+    },
+    "nx-release-publish": {
+      "options": {
+        "packageRoot": "dist/{projectRoot}"
+      }
     },
     "lint": {
       "executor": "@nx/eslint:lint"

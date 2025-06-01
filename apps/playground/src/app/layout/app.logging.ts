@@ -1,9 +1,8 @@
 import { signal, WritableSignal } from '@angular/core';
 import { environment } from '../../environments/environment';
-import { LoggingConfig as LoggingConfigLayout } from '@smz-ui/layout';
+import { LoggingConfig } from '@smz-ui/core';
 
-
-export const appLoggingLayout: WritableSignal<LoggingConfigLayout> = signal<LoggingConfigLayout>({
+export const appLogging: WritableSignal<LoggingConfig> = signal<LoggingConfig>({
   enabled: true,
   production: environment.production,
   level: 'debug',

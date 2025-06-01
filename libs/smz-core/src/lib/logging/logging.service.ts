@@ -1,13 +1,13 @@
 // logging.service.ts
 import { Injectable, signal, computed, inject } from '@angular/core';
-import { SMZ_LAYOUT_LOGGING_CONFIG } from './config/provide';
+import { SMZ_LOGGING_CONFIG } from './config/provide';
 import { LoggingScope } from './logging-scope';
 import { LoggingConfig } from './logging-config';
 import { ScopedLogger } from './scoped-logger';
 
 @Injectable({ providedIn: 'root' })
 export class LoggingService {
-  private configFn = inject(SMZ_LAYOUT_LOGGING_CONFIG).logging as () => LoggingConfig;
+  private configFn = inject(SMZ_LOGGING_CONFIG).logging as () => LoggingConfig;
   private enabled = signal<boolean>(this.configFn().enabled);
 
   // nível de each log: debug=0, info=1, warn=2, error=3

@@ -1,20 +1,20 @@
 import { EnvironmentProviders, inject, InjectionToken, makeEnvironmentProviders, provideAppInitializer } from '@angular/core';
-import { SmzLayoutLogging, SmzLayoutLoggingConfigType } from './config';
+import { SmzLogging, SmzLoggingConfigType } from './config';
 
-export const SMZ_LAYOUT_LOGGING_CONFIG = new InjectionToken<SmzLayoutLoggingConfigType>('SMZ_LAYOUT_LOGGING_CONFIG');
+export const SMZ_LOGGING_CONFIG = new InjectionToken<SmzLoggingConfigType>('SMZ_LOGGING_CONFIG');
 
-export function provideSmzLayoutLogging(initializers: (() => SmzLayoutLoggingConfigType[])): EnvironmentProviders {
+export function provideSmzLogging(initializers: (() => SmzLoggingConfigType[])): EnvironmentProviders {
   const features = initializers();
 
   const providers = features?.map((feature) => ({
-      provide: SMZ_LAYOUT_LOGGING_CONFIG,
+      provide: SMZ_LOGGING_CONFIG,
       useValue: feature,
       multi: false
   }));
 
   const initializer = provideAppInitializer(() => {
-      const SmzLayoutLoggingConfig = inject(SmzLayoutLogging);
-      features?.forEach((feature) => SmzLayoutLoggingConfig.setConfig(feature));
+      const SmzLoggingConfig = inject(SmzLogging);
+      features?.forEach((feature) => SmzLoggingConfig.setConfig(feature));
       return;
   });
 

@@ -7,8 +7,9 @@ import { withFetch } from '@angular/common/http';
 import { providePrimeNG } from 'primeng/config';
 import Aura from '@primeng/themes/aura';
 import { appRoutes } from './app.routes';
-import { appLoggingLayout } from './layout/app.logging';
-import { provideSmzLayoutLogging, provideSmzUILayout, SMZ_UI_LAYOUT_CONFIG } from '@smz-ui/layout';
+import { appLogging } from './layout/app.logging';
+import { provideSmzUILayout, SMZ_UI_LAYOUT_CONFIG } from '@smz-ui/layout';
+import { provideSmzLogging } from '@smz-ui/core';
 import { appLayoutState } from './layout/app.state';
 import { appSidebar } from './layout/app.sidebar';
 import { appFooter } from './layout/app.footer';
@@ -27,7 +28,7 @@ export const appConfig: ApplicationConfig = {
     provideHttpClient(withFetch()),
     provideAnimationsAsync(),
     providePrimeNG({ theme: { preset: Aura, options: { darkModeSelector: '.app-dark' } } }),
-    provideSmzLayoutLogging(() => [{ logging: appLoggingLayout }]),
+    provideSmzLogging(() => [{ logging: appLogging }]),
     provideSmzUILayout(() => [
       {
         sidebar: appSidebar,

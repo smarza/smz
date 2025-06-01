@@ -1,11 +1,11 @@
 import { Injectable, signal, WritableSignal } from '@angular/core';
 import { LoggingConfig } from '../logging-config';
-export type SmzLayoutLoggingConfigType = {
+export type SmzLoggingConfigType = {
     logging: WritableSignal<LoggingConfig>;
 };
 
 @Injectable({ providedIn: 'root' })
-export class SmzLayoutLogging {
+export class SmzLogging {
     logging = signal<LoggingConfig>({
       enabled: false,
       production: false,
@@ -13,7 +13,7 @@ export class SmzLayoutLogging {
       restrictedScopes: []
     });
 
-    setConfig(config: SmzLayoutLoggingConfigType): void {
+    setConfig(config: SmzLoggingConfigType): void {
         const { logging } = config || {};
 
         if (logging) {
