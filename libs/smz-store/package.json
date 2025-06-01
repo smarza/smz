@@ -4,10 +4,9 @@
   "peerDependencies": {
     "@angular/common": "^20.0.0",
     "@angular/core": "^20.0.0",
+    "@angular/router": "^20.0.0",
+    "rxjs": "^7.0.0",
     "@smz-ui/core": "^0.0.1"
-  },
-  "dependencies": {
-    "tslib": "^2.3.0"
   },
   "sideEffects": false
 }

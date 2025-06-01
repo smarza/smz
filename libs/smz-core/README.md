@@ -1,3 +1,3 @@
-# smz-core
+# @smz-ui/core
 
 This library was generated with [Nx](https://nx.dev).
