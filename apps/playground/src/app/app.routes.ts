@@ -2,6 +2,8 @@ import { Route } from '@angular/router';
 import { AccessPageComponent, AppLayoutComponent, ErrorPageComponent, NotfoundPageComponent } from '@smz-ui/layout';
 import { HomePageComponent } from './ui/pages/home-page.component';
 import { UserResourceComponent } from './ui/pages/user-resource/user-resource.component';
+import { CounterFeatureComponent } from './ui/pages/feature-store/counter-feature.component';
+import { counterFeatureStoreProvider } from './ui/pages/feature-store/counter-feature-store.provider';
 import { GlobalStoreDemoComponent } from './ui/pages/global-store-demo/global-store-demo.component';
 
 export const appRoutes: Route[] = [
@@ -20,6 +22,12 @@ export const appRoutes: Route[] = [
         children: [
           { path: 'home', component: HomePageComponent, data: { title: 'Home' } },
           { path: 'user-resource', component: UserResourceComponent, data: { title: 'User Resource Store Demo' } },
+          {
+            path: 'feature-store',
+            component: CounterFeatureComponent,
+            data: { title: 'Feature Store Demo' },
+            providers: [counterFeatureStoreProvider],
+          },
           { path: 'global-store', component: GlobalStoreDemoComponent, data: { title: 'Global Store Demo' } },
           { path: '', redirectTo: 'home', pathMatch: 'full' },
         ]
