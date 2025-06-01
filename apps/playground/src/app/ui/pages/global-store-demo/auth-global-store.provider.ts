@@ -11,7 +11,7 @@ export const authGlobalStoreProvider = (() => {
     .withInitialState({ token: null, currentUser: null })
     .withLoaderFn((api: AuthApiService) => api.fetchAuthData())
     .addDependency(AuthApiService)
-    .withTtlMs(60 * 1000);
+    .withTtlMs(3000);
 
   return builder.buildProvider(AUTH_GLOBAL_STORE_TOKEN, [AuthApiService]);
 })();

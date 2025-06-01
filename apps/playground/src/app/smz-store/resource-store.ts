@@ -147,7 +147,6 @@ export abstract class ResourceStore<T, P extends Record<string, any> | void> {
       if (this.isResolved()) {
         this._scheduleTtlReload();
       } else {
-        // Enquanto não for resolvido (idle/loading/error), limpa timer
         this._clearTtlTimer();
       }
     });

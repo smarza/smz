@@ -14,7 +14,8 @@ export const counterFeatureStoreProvider = (() => {
     .withLoaderFn(async () => {
       // Simulate async fetch of a random starting count
       return { count: Math.floor(Math.random() * 10) };
-    });
+    })
+    .withTtlMs(1000);
 
   return builder.buildProvider(COUNTER_FEATURE_STORE_TOKEN);
 })();

@@ -20,7 +20,9 @@ export abstract class GlobalStore<T> {
   protected readonly errorSignal: WritableSignal<Error | null> = signal<Error | null>(null);
 
   readonly state: Signal<T> = computed(() => this.stateSignal());
-  readonly status: Signal<GlobalStoreStatus> = computed(() => this.statusSignal());
+  readonly status: Signal<GlobalStoreStatus> = computed(() => {
+    return this.errorSignal() ? 'error' : this.statusSignal();
+  });
   readonly error: Signal<Error | null> = computed(() => this.errorSignal());
   readonly isLoading = computed(() => this.status() === 'loading');
   readonly isError = computed(() => this.status() === 'error');
@@ -46,6 +48,7 @@ export abstract class GlobalStore<T> {
     });
 
     effect(() => {
+      this.statusSignal();
       if (this.isResolved()) {
         this._scheduleTtlReload();
       } else {

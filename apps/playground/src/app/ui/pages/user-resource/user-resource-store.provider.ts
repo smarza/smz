@@ -38,7 +38,7 @@ export const userStoreProvider = (() => {
     )
     .addDependency(UserApiService)
     // 4) TTL de 2 minutos (120000 ms)
-    .withTtlMs(2 * 60 * 1000);
+    .withTtlMs(5000);
 
   // Registramos o provider, informando que UserApiService será injetado como dependência
   return builder.buildProvider(USER_RESOURCE_STORE_TOKEN, [UserApiService]);
