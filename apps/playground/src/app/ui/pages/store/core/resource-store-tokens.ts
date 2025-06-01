@@ -1,6 +1,6 @@
 // src/app/core/resource-store-tokens.ts
 import { InjectionToken } from '@angular/core';
-import { GenericResourceStore } from './generic-resource-store';
+import { GenericResourceStore } from '@smz-ui/store';
 
 /**
  * Aqui declaramos um token genérico para stores de usuário.

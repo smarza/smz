@@ -2,7 +2,7 @@
 import { Injectable, computed, inject, effect, Signal } from '@angular/core';
 import { AuthApiService } from './auth.api';
 import { Credentials, AuthStateModel, User } from './auth.model';
-import { BaseStore } from '../base-store';
+import { BaseStore } from '@smz-ui/store';
 
 function decodeJwtExpiry(token: string): number {
   const base64Url = token.split('.')[1];

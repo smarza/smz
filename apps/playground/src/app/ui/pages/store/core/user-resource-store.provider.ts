@@ -4,7 +4,7 @@ import {
   User,
   UserParams
 } from './resource-store-tokens';
-import { ResourceStoreBuilder } from './resource-store-builder';
+import { ResourceStoreBuilder } from '@smz-ui/store';
 import { UserApiService } from '../features/users/user.api';
 
 export const userStoreProvider = (() => {

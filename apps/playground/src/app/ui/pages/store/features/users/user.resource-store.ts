@@ -1,6 +1,6 @@
 // src/app/features/user/user.resource-store.ts
 import { Injectable } from '@angular/core';
-import { ResourceStore } from '../../core/resource-store';
+import { ResourceStore } from '@smz-ui/store';
 import { UserApiService } from './user.api';
 import { User } from './user.model';
 
