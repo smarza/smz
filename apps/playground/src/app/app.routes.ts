@@ -23,9 +23,15 @@ export const appRoutes: Route[] = [
           { path: 'home', component: HomePageComponent, data: { title: 'Home' } },
           { path: 'user-resource', component: UserResourceComponent, data: { title: 'User Resource Store Demo' } },
           {
-            path: 'feature-store',
+            path: 'feature-store-1',
             component: CounterFeatureComponent,
-            data: { title: 'Feature Store Demo' },
+            data: { title: 'Feature Store Demo 1' },
+            providers: [counterFeatureStoreProvider],
+          },
+          {
+            path: 'feature-store-2',
+            component: CounterFeatureComponent,
+            data: { title: 'Feature Store Demo 2' },
             providers: [counterFeatureStoreProvider],
           },
           { path: 'global-store', component: GlobalStoreDemoComponent, data: { title: 'Global Store Demo' } },
