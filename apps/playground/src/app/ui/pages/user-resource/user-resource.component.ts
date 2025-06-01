@@ -4,7 +4,7 @@ import { ButtonModule } from 'primeng/button';
 import { CommonModule } from '@angular/common';
 import { User } from './user.model';
 import { USER_RESOURCE_STORE_TOKEN, UserParams } from './user-resource-store.provider';
-import { GenericResourceStore } from '../../../smz-store/generic-resource-store';
+import { GenericResourceStore } from '@smz-ui/store';
 
 @Component({
   selector: 'app-user-resource',

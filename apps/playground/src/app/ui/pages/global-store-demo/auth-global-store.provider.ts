@@ -1,6 +1,8 @@
 import { InjectionToken } from '@angular/core';
-import { GlobalStoreBuilder } from '../../../smz-store/global-store-builder';
-import { GenericGlobalStore } from '../../../smz-store/generic-global-store';
+import {
+  GlobalStoreBuilder,
+  GenericGlobalStore,
+} from '@smz-ui/store';
 import { AuthState } from './auth.model';
 import { AuthApiService } from './auth.api';
 

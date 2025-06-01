@@ -1,7 +1,7 @@
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ButtonModule } from 'primeng/button';
-import { GenericFeatureStore } from '../../../smz-store/generic-feature-store';
+import { GenericFeatureStore } from '@smz-ui/store';
 import { COUNTER_FEATURE_1_STORE_TOKEN, CounterState } from './counter-feature-1-store.provider';
 
 @Component({

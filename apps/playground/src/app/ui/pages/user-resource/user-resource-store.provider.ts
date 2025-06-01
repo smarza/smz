@@ -1,6 +1,8 @@
 // src/app/core/user-resource-store.provider.ts
-import { ResourceStoreBuilder } from '../../../smz-store/resource-store-builder';
-import { GenericResourceStore } from '../../../smz-store/generic-resource-store';
+import {
+  ResourceStoreBuilder,
+  GenericResourceStore,
+} from '@smz-ui/store';
 import { InjectionToken } from '@angular/core';
 import { User } from './user.model';
 import { UserApiService } from './user.api';

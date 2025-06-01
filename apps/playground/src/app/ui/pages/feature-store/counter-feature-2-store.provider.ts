@@ -1,6 +1,8 @@
 import { InjectionToken } from '@angular/core';
-import { FeatureStoreBuilder } from '../../../smz-store/feature-store-builder';
-import { GenericFeatureStore } from '../../../smz-store/generic-feature-store';
+import {
+  FeatureStoreBuilder,
+  GenericFeatureStore,
+} from '@smz-ui/store';
 
 export interface CounterState {
   count: number;
