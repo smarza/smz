@@ -6,6 +6,7 @@ export const INITIAL_SIDEBAR: MenuItem[] = [
         items: [
             { label: 'Dashboard', icon: 'pi pi-fw pi-home', routerLink: ['/'] },
             { label: 'User Resource Store Demo', icon: 'pi pi-fw pi-user', routerLink: ['/user-resource'] },
+            { label: 'Feature Store Demo', icon: 'pi pi-fw pi-star', routerLink: ['/feature-store'] },
         ]
     }
 ]
