@@ -106,8 +106,7 @@ export abstract class ResourceStore<T, P extends Record<string, any> | void> {
 
   /** LoggingService e logger */
   protected readonly loggingService = inject(LoggingService);
-  protected readonly logger: ScopedLogger =
-    this.loggingService.scoped((this.constructor as { name: string }).name);
+  protected logger: ScopedLogger;
 
   /** Timestamp (ms) do último fetch bem-sucedido */
   private lastFetchTimestamp: number | null = null;
@@ -115,7 +114,10 @@ export abstract class ResourceStore<T, P extends Record<string, any> | void> {
   /** Timer de TTL (se houver) */
   private ttlTimer: ReturnType<typeof setTimeout> | null = null;
 
-  constructor() {
+  constructor(scopeName?: string) {
+    this.logger = this.loggingService.scoped(
+      scopeName ?? (this.constructor as { name: string }).name
+    );
     // 5) Logs automáticos sobre valueRaw
     effect(() => {
       const v = this.valueRaw();

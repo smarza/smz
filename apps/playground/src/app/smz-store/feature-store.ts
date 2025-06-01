@@ -10,8 +10,8 @@ export abstract class FeatureStore<T> extends GlobalStore<T> implements OnDestro
   private readonly destroyRef = inject(DestroyRef);
   private _ttlPaused = false;
 
-  constructor() {
-    super();
+  constructor(scopeName?: string) {
+    super(scopeName);
     this.destroyRef.onDestroy(() => this.ngOnDestroy());
   }
 
