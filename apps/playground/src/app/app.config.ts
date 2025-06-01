@@ -1,6 +1,19 @@
-import { provideClientHydration, withEventReplay } from '@angular/platform-browser';
-import { ApplicationConfig, inject, provideAppInitializer, provideBrowserGlobalErrorListeners, provideZonelessChangeDetection } from '@angular/core';
-import { provideRouter, withEnabledBlockingInitialNavigation, withInMemoryScrolling } from '@angular/router';
+import {
+  provideClientHydration,
+  withEventReplay,
+} from '@angular/platform-browser';
+import {
+  ApplicationConfig,
+  inject,
+  provideAppInitializer,
+  provideBrowserGlobalErrorListeners,
+  provideZonelessChangeDetection,
+} from '@angular/core';
+import {
+  provideRouter,
+  withEnabledBlockingInitialNavigation,
+  withInMemoryScrolling,
+} from '@angular/router';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { withFetch } from '@angular/common/http';
@@ -8,7 +21,11 @@ import { providePrimeNG } from 'primeng/config';
 import Aura from '@primeng/themes/aura';
 import { appRoutes } from './app.routes';
 import { appLoggingLayout } from './layout/app.logging';
-import { provideSmzLayoutLogging, provideSmzUILayout, SMZ_UI_LAYOUT_CONFIG } from '@smz-ui/layout';
+import {
+  provideSmzLayoutLogging,
+  provideSmzUILayout,
+  SMZ_UI_LAYOUT_CONFIG,
+} from '@smz-ui/layout';
 import { appLayoutState } from './layout/app.state';
 import { appSidebar } from './layout/app.sidebar';
 import { appFooter } from './layout/app.footer';
@@ -16,17 +33,27 @@ import { appTopbar } from './layout/app.topbar';
 import { appLayout } from './layout/app.layout';
 import { authInterceptor } from './ui/pages/store/features/auth/auth.interceptor';
 import { userStoreProvider } from './ui/pages/store/core/user-resource-store.provider';
+import { authStoreProvider } from './ui/pages/store/core/auth-global-store.provider';
 
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
     provideZonelessChangeDetection(),
     // provideZoneChangeDetection({ eventCoalescing: true }),
-    provideRouter(appRoutes, withInMemoryScrolling({ anchorScrolling: 'enabled', scrollPositionRestoration: 'enabled' }), withEnabledBlockingInitialNavigation()),
+    provideRouter(
+      appRoutes,
+      withInMemoryScrolling({
+        anchorScrolling: 'enabled',
+        scrollPositionRestoration: 'enabled',
+      }),
+      withEnabledBlockingInitialNavigation(),
+    ),
     provideClientHydration(withEventReplay()),
     provideHttpClient(withFetch(), withInterceptors([authInterceptor])),
     provideAnimationsAsync(),
-    providePrimeNG({ theme: { preset: Aura, options: { darkModeSelector: '.app-dark' } } }),
+    providePrimeNG({
+      theme: { preset: Aura, options: { darkModeSelector: '.app-dark' } },
+    }),
     provideSmzLayoutLogging(() => [{ logging: appLoggingLayout }]),
     provideSmzUILayout(() => [
       {
@@ -34,13 +61,14 @@ export const appConfig: ApplicationConfig = {
         footer: appFooter,
         topbar: appTopbar,
         layout: appLayout,
-        state: appLayoutState
-      }
+        state: appLayoutState,
+      },
     ]),
     provideAppInitializer(async () => {
       const config = inject(SMZ_UI_LAYOUT_CONFIG);
       config.hasClaim = () => true;
     }),
-    userStoreProvider
+    userStoreProvider,
+    authStoreProvider,
   ],
 };

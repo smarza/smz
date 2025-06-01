@@ -1,10 +1,10 @@
 // src/app/features/users/user-resource.component.ts
 import { Component, inject, Inject } from '@angular/core';
 import { ButtonModule } from 'primeng/button';
-import { UserParams } from './core/resource-store-tokens';
-import { User } from './core/resource-store-tokens';
-import { GenericResourceStore } from './core/generic-resource-store';
-import { USER_RESOURCE_STORE_TOKEN } from './core/resource-store-tokens';
+import { UserParams } from '@smz-ui/store';
+import { User } from '@smz-ui/store';
+import { GenericResourceStore } from '@smz-ui/store';
+import { USER_RESOURCE_STORE_TOKEN } from '@smz-ui/store';
 import { CommonModule } from '@angular/common';
 
 @Component({

@@ -3,8 +3,8 @@ import {
   USER_RESOURCE_STORE_TOKEN,
   User,
   UserParams
-} from './resource-store-tokens';
-import { ResourceStoreBuilder } from './resource-store-builder';
+} from '@smz-ui/store';
+import { ResourceStoreBuilder } from '@smz-ui/store';
 import { UserApiService } from '../features/users/user.api';
 
 export const userStoreProvider = (() => {
