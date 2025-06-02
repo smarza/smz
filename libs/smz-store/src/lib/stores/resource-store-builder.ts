@@ -17,7 +17,7 @@ export class ResourceStoreBuilder<
   private _name!: string;
 
   /**
-   * Configura os parâmetros iniciais (P).
+   * Sets the initial parameters (P).
    */
   withInitialParams(params: P): this {
     this._initialParams = params;
@@ -25,7 +25,7 @@ export class ResourceStoreBuilder<
   }
 
   /**
-   * Configura o defaultValue (T) retornado enquanto o backend não responder.
+   * Sets the defaultValue (T) returned while the backend hasn't responded.
    */
   withDefaultValue(defaultValue: T): this {
     this._defaultValue = defaultValue;
@@ -33,9 +33,9 @@ export class ResourceStoreBuilder<
   }
 
   /**
-   * Configura a função que carrega o recurso.
-   * O loaderFn pode receber, além de `params`, qualquer número de dependências
-   * que forem registradas via `addDependency(...)`.
+   * Configures the function that loads the resource.
+   * The loaderFn may receive, besides `params`, any number of dependencies
+   * registered via `addDependency(...)`.
    */
   withLoaderFn(loaderFn: (params: P, ...deps: any[]) => Promise<T>): this {
     this._loaderFn = loaderFn;
@@ -48,7 +48,7 @@ export class ResourceStoreBuilder<
   }
 
   /**
-   * Se quiser revalidação automática (TTL), informe aqui o tempo em milissegundos.
+   * If automatic revalidation (TTL) is desired, specify the time in milliseconds.
    */
   withTtlMs(ttlMs: number): this {
     this._ttlMs = ttlMs;
@@ -56,27 +56,26 @@ export class ResourceStoreBuilder<
   }
 
   /**
-   * Adiciona uma dependência que será injetada na factory.
-   * Exemplo: .addDependency(UserApiService)
+   * Adds a dependency that will be injected in the factory.
+   * Example: .addDependency(UserApiService)
    */
   addDependency(dep: any): this {
-    // Armazenamos a classe na lista, mas não precisamos guardá-la aqui
+    // We store the class in the list but don't need to keep it here
     return this;
   }
 
   /**
-   * Monta e retorna um Provider Angular, que associa um InjectionToken genérico
-   * (por ex. USER_RESOURCE_STORE_TOKEN) à instância de GenericResourceStore<T,P>
-   * criada em runtime.
+   * Builds and returns an Angular Provider that associates a generic InjectionToken
+   * (e.g. USER_RESOURCE_STORE_TOKEN) with the runtime GenericResourceStore<T,P> instance.
    *
    * @param token InjectionToken<GenericResourceStore<T, P>>
-   * @param extraDeps Lista de serviços injetáveis que o loaderFn usa
+   * @param extraDeps List of injectable services used by loaderFn
    */
   buildProvider(
     token: InjectionToken<GenericResourceStore<T, P>>,
     extraDeps: any[] = []
   ): Provider {
-    // O Angular vai injetar, nesta ordem: EnvironmentInjector e cada classe em extraDeps
+    // Angular will inject, in this order: EnvironmentInjector and each class in extraDeps
     const depsArray = [EnvironmentInjector, ...extraDeps];
 
     return {
@@ -85,11 +84,11 @@ export class ResourceStoreBuilder<
         envInjector: EnvironmentInjector,
         ...injectedDeps: any[]
       ) => {
-        // Crie o loader que passa params + dependências injetadas
+        // Create the loader that passes params plus the injected dependencies
         const adaptedLoader = (params: P) =>
           this._loaderFn(params, ...injectedDeps);
 
-        // Instancia o GenericResourceStore
+        // Instantiate the GenericResourceStore
         const store = new GenericResourceStore<T, P>({
           scopeName: this._name ?? (token as any).desc ?? token.toString(),
           initialParams: this._initialParams,
@@ -98,8 +97,8 @@ export class ResourceStoreBuilder<
           ttlMs: this._ttlMs,
         });
 
-        // Como no construtor do ResourceStore ele usou getInitialParams() indefinido,
-        // precisamos forçar o loader a rodar com o valor correto:
+        // Since the ResourceStore constructor used getInitialParams() undefined,
+        // we need to force the loader to run with the correct value:
         store.setParams(this._initialParams);
 
         return store;
