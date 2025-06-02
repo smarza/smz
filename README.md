@@ -2,6 +2,12 @@
 
 This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 20.0.0.
 
+## References
+
+- [AnalogJS](https://analogjs.org/)
+- [Using a schematic generator](https://analogjs.org/docs/features/testing/vitest#using-a-schematicgenerator)
+
+
 ## Development server
 
 To start a local development server, run:
