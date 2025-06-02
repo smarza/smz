@@ -79,3 +79,28 @@ The Store will have main 3 features: Resource Store, Global Store, Feature Store
 ### Posts CRUD Demo
 
 A simple feature demonstrating CRUD actions with a `GenericFeatureStore` is available under the `posts-crud` route.
+
+The store is built using `FeatureStoreBuilder` and the `withAction()` helper to attach async actions:
+
+```ts
+export const postsCrudStoreProvider = new FeatureStoreBuilder<{ posts: Post[] }>()
+  .withName('PostsCrudStore')
+  .withInitialState({ posts: [] })
+  .withLoaderFn(async (api: PostApiService) => ({ posts: await api.getPosts() }))
+  .addDependency(PostApiService)
+  .withAction('createPost', (store: PostsCrudStore, api: PostApiService) => async (post: Omit<Post, 'id'>) => {
+    const created = await api.createPost(post);
+    store.updateState({ posts: [...store.state().posts, created] });
+  })
+  .withAction('updatePost', (store: PostsCrudStore, api: PostApiService) => async (post: Post) => {
+    const updated = await api.updatePost(post);
+    store.updateState({
+      posts: store.state().posts.map((p) => (p.id === updated.id ? updated : p)),
+    });
+  })
+  .withAction('deletePost', (store: PostsCrudStore, api: PostApiService) => async (id: number) => {
+    await api.deletePost(id);
+    store.updateState({ posts: store.state().posts.filter((p) => p.id !== id) });
+  })
+  .buildProvider(POSTS_CRUD_STORE_TOKEN);
+```

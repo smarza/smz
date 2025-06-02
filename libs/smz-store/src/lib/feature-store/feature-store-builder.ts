@@ -3,20 +3,33 @@ import { NavigationEnd, NavigationStart, Router } from '@angular/router';
 import { filter } from 'rxjs/operators';
 import { GenericFeatureStore } from './generic-feature-store';
 
-export class FeatureStoreBuilder<T> {
-  private _initialState!: T;
-  private _loaderFn!: (...deps: any[]) => Promise<Partial<T>>;
+export class FeatureStoreBuilder<TState, TActions extends GenericFeatureStore<TState> = GenericFeatureStore<TState>> {
+  private _initialState!: TState;
+  private _loaderFn!: (...deps: any[]) => Promise<Partial<TState>>;
   private _ttlMs = 0;
   private _name!: string;
   private _deps: any[] = [];
-  private _setupFns: Array<(store: GenericFeatureStore<T>, ...deps: any[]) => void> = [];
+  private _setupFns: Array<(store: GenericFeatureStore<TState>, ...deps: any[]) => void> = [];
 
-  withInitialState(state: T): this {
+  withAction(
+    name:  Extract<keyof TActions, string>,
+    factory: (
+      store: GenericFeatureStore<TState>,
+      ...deps: any[]
+    ) => (...args: any[]) => Promise<void>
+  ): this {
+    this._setupFns.push((store: GenericFeatureStore<TState>, ...deps: any[]) => {
+      (store as any)[name] = factory(store, ...deps);
+    });
+    return this;
+  }
+
+  withInitialState(state: TState): this {
     this._initialState = state;
     return this;
   }
 
-  withLoaderFn(fn: (...deps: any[]) => Promise<Partial<T>>): this {
+  withLoaderFn(fn: (...deps: any[]) => Promise<Partial<TState>>): this {
     this._loaderFn = fn;
     return this;
   }
@@ -36,12 +49,12 @@ export class FeatureStoreBuilder<T> {
     return this;
   }
 
-  withSetup(fn: (store: GenericFeatureStore<T>, ...deps: any[]) => void): this {
+  withSetup(fn: (store: GenericFeatureStore<TState>, ...deps: any[]) => void): this {
     this._setupFns.push(fn);
     return this;
   }
 
-  buildProvider(token: InjectionToken<GenericFeatureStore<T>>, extraDeps: any[] = []): Provider {
+  buildProvider(token: InjectionToken<GenericFeatureStore<TState>>, extraDeps: any[] = []): Provider {
     const depsArray = [EnvironmentInjector, DestroyRef, Router, ...this._deps, ...extraDeps];
     return {
       provide: token,
@@ -53,7 +66,7 @@ export class FeatureStoreBuilder<T> {
       ) => {
 
         const loader = () => this._loaderFn(...injectedDeps);
-        const store = new GenericFeatureStore<T>({
+        const store = new GenericFeatureStore<TState>({
           scopeName: this._name ?? (token as any).desc ?? token.toString(),
           initialState: this._initialState,
           loaderFn: loader,
