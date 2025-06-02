@@ -2,8 +2,14 @@
   "name": "@smz-ui/store-testing",
   "version": "0.0.1",
   "peerDependencies": {
-    "@angular/common": "^20.0.0",
-    "@angular/core": "^20.0.0"
+    "@angular/core": "^20.0.0",
+    "@smz-ui/store": "^0.0.1",
+    "@angular/platform-browser-dynamic": "^20.0.0",
+    "@smz-ui/core": "^0.0.1",
+    "vite": "^6.3.5",
+    "@analogjs/vite-plugin-angular": "^1.0.0",
+    "@nx/vite": "^21.1.2",
+    "vitest": "^3.2.0"
   },
   "sideEffects": false
 }

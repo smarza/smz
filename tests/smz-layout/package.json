@@ -1,0 +1,10 @@
+{
+  "name": "@smz-ui/layout-testing",
+  "version": "0.0.1",
+  "peerDependencies": {
+    "vite": "^6.3.5",
+    "@analogjs/vite-plugin-angular": "^1.0.0",
+    "@nx/vite": "^21.1.2"
+  },
+  "sideEffects": false
+}
