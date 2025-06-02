@@ -16,21 +16,18 @@ export const postsCrudStoreProvider = new FeatureStoreBuilder<{ posts: Post[] }>
   .withInitialState({ posts: [] })
   .withLoaderFn(async (api: PostApiService) => ({ posts: await api.getPosts() }))
   .addDependency(PostApiService)
-  .withSetup((store: PostsCrudStore, api: PostApiService) => {
-    const extended = store as PostsCrudStore;
-    extended.createPost = async (post) => {
-      const created = await api.createPost(post);
-      extended.updateState({ posts: [...extended.state().posts, created] });
-    };
-    extended.updatePost = async (post) => {
-      const updated = await api.updatePost(post);
-      extended.updateState({
-        posts: extended.state().posts.map((p) => (p.id === updated.id ? updated : p)),
-      });
-    };
-    extended.deletePost = async (id) => {
-      await api.deletePost(id);
-      extended.updateState({ posts: extended.state().posts.filter((p) => p.id !== id) });
-    };
+  .withAction('createPost', (store: PostsCrudStore, api: PostApiService) => async (post: Omit<Post, 'id'>) => {
+    const created = await api.createPost(post);
+    store.updateState({ posts: [...store.state().posts, created] });
+  })
+  .withAction('updatePost', (store: PostsCrudStore, api: PostApiService) => async (post: Post) => {
+    const updated = await api.updatePost(post);
+    store.updateState({
+      posts: store.state().posts.map((p) => (p.id === updated.id ? updated : p)),
+    });
+  })
+  .withAction('deletePost', (store: PostsCrudStore, api: PostApiService) => async (id: number) => {
+    await api.deletePost(id);
+    store.updateState({ posts: store.state().posts.filter((p) => p.id !== id) });
   })
   .buildProvider(POSTS_CRUD_STORE_TOKEN);

@@ -11,6 +11,19 @@ export class FeatureStoreBuilder<T> {
   private _deps: any[] = [];
   private _setupFns: Array<(store: GenericFeatureStore<T>, ...deps: any[]) => void> = [];
 
+  withAction<K extends string>(
+    name: K,
+    factory: (
+      store: GenericFeatureStore<T>,
+      ...deps: any[]
+    ) => (...args: any[]) => Promise<void>
+  ): this {
+    this._setupFns.push((store: GenericFeatureStore<T>, ...deps: any[]) => {
+      (store as any)[name] = factory(store, ...deps);
+    });
+    return this;
+  }
+
   withInitialState(state: T): this {
     this._initialState = state;
     return this;
