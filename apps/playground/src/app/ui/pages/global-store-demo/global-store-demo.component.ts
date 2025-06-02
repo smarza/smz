@@ -17,8 +17,8 @@ import { AuthState } from './auth.model';
     </div>
 
     <div class="flex gap-2">
-      <button pButton type="button" icon="pi pi-refresh" (click)="store.reload()">Reload</button>
-      <button pButton type="button" icon="pi pi-times" severity="danger" (click)="clear()">Clear</button>
+      <button pButton type="button" label="Reload" icon="pi pi-refresh" (click)="store.reload()"></button>
+      <button pButton type="button" label="Clear" icon="pi pi-times" severity="danger" (click)="clear()"></button>
     </div>
 
     @if (store.isLoading()) {

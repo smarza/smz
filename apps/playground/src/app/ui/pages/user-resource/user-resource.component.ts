@@ -17,11 +17,11 @@ import { GenericResourceStore } from '@smz-ui/store';
   </div>
 
   <div class="flex gap-2">
-    <button pButton type="button" icon="pi pi-user" severity="help" (click)="firstUser()">First User</button>
+    <button pButton type="button" label="First User" icon="pi pi-user" severity="help" (click)="firstUser()"></button>
     @if (store.isResolved()) {
-      <button pButton type="button" icon="pi pi-arrow-left" (click)="previousUser()">Previous User</button>
-      <button pButton type="button" icon="pi pi-arrow-right" (click)="nextUser()">Next User</button>
-      <button pButton type="button" icon="pi pi-refresh" severity="info" (click)="store.reload()">Reload User</button>
+      <button pButton type="button" label="Previous User" icon="pi pi-arrow-left" (click)="previousUser()"></button>
+      <button pButton type="button" label="Next User" icon="pi pi-arrow-right" (click)="nextUser()"></button>
+      <button pButton type="button" label="Reload User" icon="pi pi-refresh" severity="info" (click)="store.reload()"></button>
     }
   </div>
 

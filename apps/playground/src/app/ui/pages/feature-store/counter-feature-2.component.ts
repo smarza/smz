@@ -16,8 +16,8 @@ import { COUNTER_FEATURE_2_STORE_TOKEN, counterFeature2StoreProvider, CounterSta
     <div>Status: {{ store.status() }}</div>
 
     <div class="flex gap-2">
-      <button pButton type="button" icon="pi pi-plus" (click)="increment()">Increment</button>
-      <button pButton type="button" icon="pi pi-refresh" severity="info" (click)="reload()">Reload Random</button>
+      <button pButton type="button" label="Increment" icon="pi pi-plus" (click)="increment()"></button>
+      <button pButton type="button" label="Reload Random" icon="pi pi-refresh" severity="info" (click)="reload()"></button>
     </div>
 
     @if (store.isResolved()) {
