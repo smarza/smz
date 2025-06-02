@@ -11,13 +11,31 @@ import { COUNTER_FEATURE_1_STORE_TOKEN, CounterState } from './counter-feature-1
   host: { class: 'flex flex-col gap-4' },
   template: `
   <div class="flex flex-col gap-2">
-    <div class="text-3xl font-bold">Feature Store Demo</div>
+    <div class="text-3xl font-bold">Feature Store Demo 1</div>
     <div>Status: {{ store.status() }}</div>
-    <div>Count: {{ store.state().count }}</div>
-  </div>
-  <div class="flex gap-2">
-    <button pButton type="button" icon="pi pi-plus" (click)="increment()">Increment</button>
-    <button pButton type="button" icon="pi pi-refresh" severity="info" (click)="reload()">Reload Random</button>
+
+    <div class="flex gap-2">
+      <button pButton type="button" icon="pi pi-plus" (click)="increment()">Increment</button>
+      <button pButton type="button" icon="pi pi-refresh" severity="info" (click)="reload()">Reload Random</button>
+    </div>
+
+    @if (store.isResolved()) {
+      <div class="text-2xl font-bold">Count: {{ store.state().count }}</div>
+    }
+
+    @if (store.isLoading()){
+      <div>
+      <p>Loading user…</p>
+      </div>
+    }
+
+    @if (store.isError()){
+    <div class="flex flex-col gap-2">
+      <div class="text-lg font-bold text-red-500">Error loading user</div>
+      <div>{{ store.error()?.message }}</div>
+    </div>
+  }
+
   </div>
   `
 })
