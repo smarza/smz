@@ -246,16 +246,18 @@ export abstract class ResourceStore<T, P extends Record<string, any> | void> {
    * Recursively deep-freezes the P object to guarantee immutability.
    * If P = void or a non-object value, returns it as is.
    */
-  private _deepFreezeParams(obj: P): P {
+  private _deepFreezeParams(obj: P, visited: Set<any> = new Set<any>()): P {
     if (obj === null || obj === undefined || typeof obj !== 'object') {
       return obj;
     }
+    if (visited.has(obj)) return obj;
+    visited.add(obj);
     const objAsRecord = obj as Record<string, unknown>;
     Object.freeze(objAsRecord);
     for (const key of Object.keys(objAsRecord)) {
       const val = objAsRecord[key];
       if (val && typeof val === 'object' && !Object.isFrozen(val)) {
-        this._deepFreezeParams(val as P);
+        this._deepFreezeParams(val as P, visited);
       }
     }
     return obj;

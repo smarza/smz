@@ -118,16 +118,18 @@ export abstract class GlobalStore<T> {
     }
   }
 
-  private _deepFreeze(obj: T): T {
+  private _deepFreeze(obj: T, visited: Set<any> = new Set<any>()): T {
     if (obj === null || obj === undefined || typeof obj !== 'object') {
       return obj;
     }
+    if (visited.has(obj)) return obj;
+    visited.add(obj);
     const r = obj as Record<string, unknown>;
     Object.freeze(r);
     for (const k of Object.keys(r)) {
       const val = r[k];
       if (val && typeof val === 'object' && !Object.isFrozen(val)) {
-        this._deepFreeze(val as T);
+        this._deepFreeze(val as T, visited);
       }
     }
     return obj;
