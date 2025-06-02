@@ -58,11 +58,11 @@ export abstract class GlobalStore<T> {
     });
   }
 
-  /** Valor inicial de estado */
+  /** Initial state value */
   protected abstract getInitialState(): T;
-  /** Função de carregamento opcional */
+  /** Optional load function */
   protected abstract loadFromApi(): Promise<Partial<T>>;
-  /** TTL opcional (ms) */
+  /** Optional TTL (ms) */
   protected getTtlMs(): number {
     return 0;
   }

@@ -21,28 +21,28 @@ import { LoggingService, ScopedLogger } from '@smz-ui/core';
  *
  * This class sets up:
  *  - A WritableSignal<P> called paramsSignal
- *  - A ResourceRef<T> called resourceRef (internally atualiza valueRaw e statusRaw)
- *  - Signals "value", "status" que combinam raw + errorSignal
- *  - Signals "errorSignal" e "errorMessage"
+ *  - A ResourceRef<T> called resourceRef (internally updates valueRaw and statusRaw)
+ *  - Signals "value" and "status" that combine the raw values with errorSignal
+ *  - Signals "errorSignal" and "errorMessage"
  *  - Boolean flags "isLoading", "isError", "isResolved"
- *  - auto-logging effects of changes em valueRaw, statusRaw e errorSignal
- *  - public methods setParams(...) e reload()
- *  - TTL/revalidação opcional
+ *  - Auto logging effects for changes in valueRaw, statusRaw and errorSignal
+ *  - Public methods setParams(...) and reload()
+ *  - Optional TTL/revalidation
  *
- * Em caso de erro no HTTP (por exemplo 404), o loader NÃO lança. Ao invés disso:
- *  1. Registro o erro em errorSignal.
- *  2. Retorno defaultValue para que valueReal nunca seja undefined.
- *  3. status() é definido para 'error' enquanto errorSignal não for null.
+ * In case of an HTTP error (for example 404), the loader does NOT throw. Instead:
+ *  1. The error is stored in errorSignal.
+ *  2. defaultValue is returned so valueReal is never undefined.
+ *  3. status() is set to 'error' while errorSignal is not null.
  */
 @Injectable({ providedIn: 'root' })
 export abstract class ResourceStore<T, P extends Record<string, any> | void> {
-  // 1) Sinal interno para parâmetros (P), já "frozen" para garantir imutabilidade
+  // 1) Internal signal for parameters (P), already frozen to ensure immutability
   protected readonly paramsSignal: WritableSignal<P> =
     signal<P>(this._deepFreezeParams(this.getInitialParams()));
 
-  // 2) ResourceRef<T> é a "versão bruta" do recurso:
-  //    - loaderRaw faz fetch (ou catch + defaultValue)
-  //    - valueRaw e statusRaw são gerenciados por ResourceRef
+  // 2) ResourceRef<T> is the "raw version" of the resource:
+  //    - loaderRaw performs fetch (or catch + defaultValue)
+  //    - valueRaw and statusRaw are managed by ResourceRef
   protected readonly resourceRef: ResourceRef<T> = resource<T, P>({
     params: () => this.paramsSignal(),
     loader: async ({ params }) => {
@@ -53,7 +53,7 @@ export abstract class ResourceStore<T, P extends Record<string, any> | void> {
         this._updateLastFetch();
         return Object.freeze(result as T);
       } catch (err: unknown) {
-        // Se for HttpErrorResponse ou outro objeto, embrulhe em Error
+        // If it's HttpErrorResponse or another object, wrap it in Error
         const wrappedError: Error =
           err instanceof Error
             ? err
@@ -61,7 +61,7 @@ export abstract class ResourceStore<T, P extends Record<string, any> | void> {
 
         logger.error(`loader error for params=`, params, wrappedError);
 
-        // Ao invés de lançar, registramos no errorSignal e retornamos defaultValue
+        // Instead of throwing, register in errorSignal and return defaultValue
         this.errorSignal.set(wrappedError);
         return this.getDefaultValue();
       }
@@ -69,69 +69,69 @@ export abstract class ResourceStore<T, P extends Record<string, any> | void> {
     defaultValue: this.getDefaultValue()
   });
 
-  // 3) Sinais "raw" gerenciados pelo resourceRef:
+  // 3) "Raw" signals managed by resourceRef:
   private readonly valueRaw: Signal<T> = computed(() => this.resourceRef.value());
   private readonly statusRaw: Signal<ResourceStatus> = computed(() => this.resourceRef.status());
 
-  // 4) errorSignal próprio para registrar o erro real (HttpErrorResponse ou Error)
+  // 4) Dedicated errorSignal to store the actual error (HttpErrorResponse or Error)
   private readonly errorSignal: WritableSignal<Error | null> = signal<Error | null>(null);
 
-  /** value() expõe valueRaw, ou defaultValue se estivermos em "error" */
+  /** value() exposes valueRaw, or defaultValue when in "error" */
   readonly value: Signal<T> = computed(() => {
-    // Se houver um errorSignal, devolve defaultValue (que já é valueRaw nesse caso)
+    // If there is an errorSignal, return defaultValue (which is already valueRaw in this case)
     return this.errorSignal() ? this.getDefaultValue() : this.valueRaw();
   });
 
-  /** status() combina statusRaw e errorSignal:
-   *  - se errorSignal não for null → 'error'
+  /** status() combines statusRaw and errorSignal:
+   *  - if errorSignal is not null → 'error'
    *  - else → statusRaw
    */
   readonly status: Signal<ResourceStatus> = computed(() => {
     return this.errorSignal() ? 'error' : this.statusRaw();
   });
 
-  /** Expor errorSignal como sinal somente-leitura para componentes */
+  /** Expose errorSignal as a read-only signal for components */
   readonly error: Signal<Error | null> = computed(() => this.errorSignal());
 
-  /** Mensagem amigável do erro, se houver */
+  /** Friendly error message, if any */
   readonly errorMessage: Signal<string | null> = computed(() => {
     const e = this.error();
     return e ? e.message : null;
   });
 
-  /** Flags booleanas para templates ou lógica de componente */
+  /** Boolean flags for templates or component logic */
   readonly isLoading: Signal<boolean> = computed(() => this.status() === 'loading');
   readonly isError: Signal<boolean> = computed(() => this.status() === 'error');
   readonly isResolved: Signal<boolean> = computed(() => this.status() === 'resolved');
 
-  /** LoggingService e logger */
+  /** LoggingService and logger */
   protected readonly loggingService = inject(LoggingService);
   protected logger: ScopedLogger;
 
-  /** Timestamp (ms) do último fetch bem-sucedido */
+  /** Timestamp (ms) of the last successful fetch */
   private lastFetchTimestamp: number | null = null;
 
-  /** Timer de TTL (se houver) */
+  /** TTL timer (if any) */
   private ttlTimer: ReturnType<typeof setTimeout> | null = null;
 
   constructor(scopeName?: string) {
     this.logger = this.loggingService.scoped(
       scopeName ?? (this.constructor as { name: string }).name
     );
-    // 5) Logs automáticos sobre valueRaw
+    // 5) Automatic logs about valueRaw
     effect(() => {
       const v = this.valueRaw();
       this.logger.debug(`valueRaw updated →`, v);
     });
 
-    // 6) Logs automáticos sobre statusRaw
+    // 6) Automatic logs about statusRaw
     effect(() => {
       const s = this.statusRaw();
       this.logger.debug(`statusRaw changed →`, s);
     });
 
-    // 7) Quando raw entra em erro (statusRaw = 'error') ou errorSignal se torna != null,
-    //    mostramos log e garantimos que o timer de TTL seja cancelado.
+    // 7) When raw goes into error (statusRaw = 'error') or errorSignal becomes != null,
+    //    log it and ensure the TTL timer is cleared.
     effect(() => {
       if (this.errorSignal()) {
         const e = this.errorSignal();
@@ -140,7 +140,7 @@ export abstract class ResourceStore<T, P extends Record<string, any> | void> {
       }
     });
 
-    // 8) Quando status() (combinado) é 'resolved', agendamos reload após TTL
+    // 8) When status() (combined) is 'resolved', schedule reload after TTL
     effect(() => {
       if (this.isResolved()) {
         this._scheduleTtlReload();
@@ -151,36 +151,36 @@ export abstract class ResourceStore<T, P extends Record<string, any> | void> {
   }
 
   /**
-   * Subclasses devem informar:
-   * 1) O parâmetro inicial (P) ou undefined se P = void
-   * 2) O defaultValue para T (imutável/frozen)
-   * 3) A chamada real à API que retorna Promise<T>
+   * Subclasses must provide:
+   * 1) The initial parameter (P) or undefined if P = void
+   * 2) The immutable defaultValue of T
+   * 3) The actual API call returning Promise<T>
    */
 
-  /** Retorna o valor inicial de P (por exemplo, { id: 1 }) ou undefined se P = void */
+  /** Returns the initial value of P (e.g. { id: 1 }) or undefined if P = void */
   protected abstract getInitialParams(): P;
 
-  /** Retorna defaultValue (imutável) de T para inicialização e em caso de erro */
+  /** Returns the immutable defaultValue of T for initialization and on error */
   protected abstract getDefaultValue(): T;
 
-  /** Executa a chamada real à API e retorna Promise<T> */
+  /** Executes the real API call and returns Promise<T> */
   protected abstract loadFromApi(params: P): Promise<T>;
 
   /**
-   * Altera P e dispara reload automático.
-   * Cancela timer de TTL se houver.
+   * Changes P and triggers an automatic reload.
+   * Cancels the TTL timer if present.
    */
   setParams(newParams: P): void {
     this.logger.info(`setParams →`, newParams);
     this._clearTtlTimer();
-    // Limpa qualquer erro anterior antes de mudar o parâmetro
+    // Clear any previous error before changing the parameter
     this.errorSignal.set(null);
     this.paramsSignal.set(this._deepFreezeParams(newParams));
   }
 
   /**
-   * Force reload (mesmos params), cancela TTL timer.
-   * Também limpa errorSignal antes de recarregar.
+   * Force reload with the same params and cancel the TTL timer.
+   * Also clears errorSignal before reloading.
    */
   reload(): void {
     this.logger.info(`reload()`);
@@ -190,21 +190,21 @@ export abstract class ResourceStore<T, P extends Record<string, any> | void> {
   }
 
   /**
-   * TTL em milissegundos. Se <= 0, desativa TTL.
-   * Subclasses podem sobrescrever para retornar > 0.
+   * TTL in milliseconds. If <= 0, TTL is disabled.
+   * Subclasses may override to return > 0.
    */
   protected getTtlMs(): number {
     return 0;
   }
 
-  /** Chama depois de fetch bem-sucedido para registrar timestamp */
+  /** Called after a successful fetch to record the timestamp */
   private _updateLastFetch(): void {
     this.lastFetchTimestamp = Date.now();
   }
 
   /**
-   * Agenda reload após TTL. Se TTL <= 0, não faz nada.
-   * Se já expirou, recarrega imediatamente.
+   * Schedule reload after TTL. If TTL <= 0, do nothing.
+   * If it has already expired, reload immediately.
    */
   private _scheduleTtlReload(): void {
     const ttl = this.getTtlMs();
@@ -212,7 +212,7 @@ export abstract class ResourceStore<T, P extends Record<string, any> | void> {
       return;
     }
 
-    // Cancelar timer anterior
+    // Cancel previous timer
     if (this.ttlTimer) {
       this._clearTtlTimer();
     }
@@ -234,7 +234,7 @@ export abstract class ResourceStore<T, P extends Record<string, any> | void> {
     }
   }
 
-  /** Cancela qualquer timer de TTL pendente */
+  /** Cancels any pending TTL timer */
   private _clearTtlTimer(): void {
     if (this.ttlTimer) {
       clearTimeout(this.ttlTimer);
@@ -243,8 +243,8 @@ export abstract class ResourceStore<T, P extends Record<string, any> | void> {
   }
 
   /**
-   * Deep-freeze recursivo do objeto P para garantir imutabilidade.
-   * Se P = void ou valor não-objeto, retorna como está.
+   * Recursively deep-freezes the P object to guarantee immutability.
+   * If P = void or a non-object value, returns it as is.
    */
   private _deepFreezeParams(obj: P): P {
     if (obj === null || obj === undefined || typeof obj !== 'object') {
