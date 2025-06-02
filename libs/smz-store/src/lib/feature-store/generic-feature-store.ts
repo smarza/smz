@@ -1,22 +1,22 @@
 import { FeatureStore } from './feature-store';
 
-export class GenericFeatureStore<T> extends FeatureStore<T> {
-  private readonly _initialState: T;
-  private readonly _loaderFn: () => Promise<Partial<T>>;
+export class GenericFeatureStore<TState> extends FeatureStore<TState> {
+  private readonly _initialState: TState;
+  private readonly _loaderFn: () => Promise<Partial<TState>>;
   private readonly _ttlMs: number;
 
-  constructor(options: { scopeName: string; initialState: T; loaderFn: () => Promise<Partial<T>>; ttlMs?: number }) {
+  constructor(options: { scopeName: string; initialState: TState; loaderFn: () => Promise<Partial<TState>>; ttlMs?: number }) {
     super(options.scopeName);
     this._initialState = options.initialState;
     this._loaderFn = options.loaderFn;
     this._ttlMs = options.ttlMs ?? 0;
   }
 
-  protected override getInitialState(): T {
+  protected override getInitialState(): TState {
     return this._initialState;
   }
 
-  protected override loadFromApi(): Promise<Partial<T>> {
+  protected override loadFromApi(): Promise<Partial<TState>> {
     return this._loaderFn();
   }
 
