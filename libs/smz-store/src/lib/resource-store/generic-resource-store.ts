@@ -1,4 +1,3 @@
-// src/app/core/generic-resource-store.ts
 import { ResourceStore } from './resource-store';
 
 /**

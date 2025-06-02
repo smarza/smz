@@ -1,4 +1,3 @@
-// src/app/core/resource-store.ts
 import {
   inject,
   Injectable,

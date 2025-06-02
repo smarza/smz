@@ -1,5 +1,5 @@
 import { DestroyRef, Injectable, OnDestroy, inject } from '@angular/core';
-import { GlobalStore } from './global-store';
+import { GlobalStore } from '../global-store/global-store';
 
 /**
  * FeatureStore behaves like a GlobalStore but is not provided in the root

@@ -1,4 +1,3 @@
-// src/app/core/resource-store-builder.ts
 import {
   EnvironmentInjector,
   Provider,
