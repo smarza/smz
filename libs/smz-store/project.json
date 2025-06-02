@@ -43,5 +43,15 @@
     "lint": {
       "executor": "@nx/eslint:lint"
     }
+    ,
+    "test": {
+      "executor": "@angular-devkit/build-angular:karma",
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "options": {
+        "main": "libs/smz-store/src/test.ts",
+        "tsConfig": "libs/smz-store/tsconfig.spec.json",
+        "karmaConfig": "libs/smz-store/karma.conf.js"
+      }
+    }
   }
 }
