@@ -35,6 +35,7 @@ import { Post } from './post.model';
     }
 
     @if (store.isResolved()) {
+      <div>Number of posts: {{ store.state().posts.length }}</div>
       <div class="flex flex-col gap-2">
         <div *ngFor="let p of store.state().posts; trackBy: trackById" class="border p-2 flex flex-col gap-2">
           <input class="border p-1" [(ngModel)]="p.title" name="title-{{p.id}}" (blur)="updatePost(p)" />
