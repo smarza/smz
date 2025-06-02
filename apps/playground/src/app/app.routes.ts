@@ -6,6 +6,8 @@ import { CounterFeature1Component } from './ui/pages/feature-store/counter-featu
 import { CounterFeature2Component } from './ui/pages/feature-store/counter-feature-2.component';
 import { counterFeature1StoreProvider } from './ui/pages/feature-store/counter-feature-1-store.provider';
 import { GlobalStoreDemoComponent } from './ui/pages/global-store-demo/global-store-demo.component';
+import { PostsCrudComponent } from './ui/pages/posts-crud/posts-crud.component';
+import { postsCrudStoreProvider } from './ui/pages/posts-crud/posts-crud-store.provider';
 
 export const appRoutes: Route[] = [
   {
@@ -34,6 +36,12 @@ export const appRoutes: Route[] = [
             component: CounterFeature2Component,
             data: { title: 'Feature Store Demo 2 Provided in the Component' },
             providers: [],
+          },
+          {
+            path: 'posts-crud',
+            component: PostsCrudComponent,
+            data: { title: 'Posts CRUD Demo' },
+            providers: [postsCrudStoreProvider],
           },
           { path: 'global-store', component: GlobalStoreDemoComponent, data: { title: 'Global Store Demo' } },
           { path: '', redirectTo: 'home', pathMatch: 'full' },
