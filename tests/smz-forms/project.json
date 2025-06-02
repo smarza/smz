@@ -1,0 +1,29 @@
+{
+  "name": "@smz-ui/forms-testing",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "tests/smz-forms/src",
+  "prefix": "lib",
+  "projectType": "library",
+  "tags": [],
+  "targets": {
+    "build": {
+      "executor": "@nx/angular:ng-packagr-lite",
+      "outputs": ["{workspaceRoot}/dist/{projectRoot}"],
+      "options": {
+        "project": "tests/smz-forms/ng-package.json"
+      },
+      "configurations": {
+        "production": {
+          "tsConfig": "tests/smz-forms/tsconfig.lib.prod.json"
+        },
+        "development": {
+          "tsConfig": "tests/smz-forms/tsconfig.lib.json"
+        }
+      },
+      "defaultConfiguration": "production"
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint"
+    }
+  }
+}

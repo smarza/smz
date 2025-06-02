@@ -11,7 +11,8 @@
       "@smz-ui/core": ["libs/smz-core/src/index.ts"],
       "@smz-ui/forms": ["libs/smz-forms/src/index.ts"],
       "@smz-ui/layout": ["libs/smz-layout/src/index.ts"],
-      "@smz-ui/store": ["libs/smz-store/src/index.ts"]
+      "@smz-ui/store": ["libs/smz-store/src/index.ts"],
+      "@smz-ui/store-testing": ["tests/smz-store/src/index.ts"]
     }
   }
 }

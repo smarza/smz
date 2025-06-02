@@ -1,0 +1,29 @@
+{
+  "name": "@smz-ui/layout-testing",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "tests/smz-layout/src",
+  "prefix": "lib",
+  "projectType": "library",
+  "tags": [],
+  "targets": {
+    "build": {
+      "executor": "@nx/angular:ng-packagr-lite",
+      "outputs": ["{workspaceRoot}/dist/{projectRoot}"],
+      "options": {
+        "project": "tests/smz-layout/ng-package.json"
+      },
+      "configurations": {
+        "production": {
+          "tsConfig": "tests/smz-layout/tsconfig.lib.prod.json"
+        },
+        "development": {
+          "tsConfig": "tests/smz-layout/tsconfig.lib.json"
+        }
+      },
+      "defaultConfiguration": "production"
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint"
+    }
+  }
+}
