@@ -8,6 +8,8 @@ export class FeatureStoreBuilder<T> {
   private _loaderFn!: (...deps: any[]) => Promise<Partial<T>>;
   private _ttlMs = 0;
   private _name!: string;
+  private _deps: any[] = [];
+  private _setupFns: Array<(store: GenericFeatureStore<T>, ...deps: any[]) => void> = [];
 
   withInitialState(state: T): this {
     this._initialState = state;
@@ -29,12 +31,18 @@ export class FeatureStoreBuilder<T> {
     return this;
   }
 
-  addDependency(_dep: any): this {
+  addDependency(dep: any): this {
+    this._deps.push(dep);
+    return this;
+  }
+
+  withSetup(fn: (store: GenericFeatureStore<T>, ...deps: any[]) => void): this {
+    this._setupFns.push(fn);
     return this;
   }
 
   buildProvider(token: InjectionToken<GenericFeatureStore<T>>, extraDeps: any[] = []): Provider {
-    const depsArray = [EnvironmentInjector, DestroyRef, Router, ...extraDeps];
+    const depsArray = [EnvironmentInjector, DestroyRef, Router, ...this._deps, ...extraDeps];
     return {
       provide: token,
       useFactory: (
@@ -71,6 +79,8 @@ export class FeatureStoreBuilder<T> {
           sub.unsubscribe();
           store.ngOnDestroy();
         });
+
+        this._setupFns.forEach((fn) => fn(store, ...injectedDeps));
 
         void store.reload();
         return store;

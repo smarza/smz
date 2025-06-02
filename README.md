@@ -75,3 +75,7 @@ The Store will have main 3 features: Resource Store, Global Store, Feature Store
 1. Resource Store: this store represents the readonly that that the application will be consuming as resource. This Store is injected globally in the application and can be consumed anytime. The Resource store . For example, a list of something to be used in a dropdown list, or a schema list, or any entity list that doesn't change much.
 
 2. Global Store,
+
+### Posts CRUD Demo
+
+A simple feature demonstrating CRUD actions with a `GenericFeatureStore` is available under the `posts-crud` route.
