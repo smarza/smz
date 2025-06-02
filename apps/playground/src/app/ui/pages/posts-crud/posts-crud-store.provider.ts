@@ -1,7 +1,5 @@
-import { InjectionToken, Provider, EnvironmentInjector, DestroyRef } from '@angular/core';
-import { NavigationEnd, NavigationStart, Router } from '@angular/router';
-import { filter } from 'rxjs/operators';
-import { GenericFeatureStore } from '@smz-ui/store';
+import { InjectionToken } from '@angular/core';
+import { FeatureStoreBuilder, GenericFeatureStore } from '@smz-ui/store';
 import { Post } from './post.model';
 import { PostApiService } from './post.api';
 
@@ -13,44 +11,12 @@ export interface PostsCrudStore extends GenericFeatureStore<{ posts: Post[] }> {
 
 export const POSTS_CRUD_STORE_TOKEN = new InjectionToken<PostsCrudStore>('POSTS_CRUD_STORE_TOKEN');
 
-export const postsCrudStoreProvider: Provider = {
-  provide: POSTS_CRUD_STORE_TOKEN,
-  deps: [EnvironmentInjector, DestroyRef, Router, PostApiService],
-  useFactory: (
-    env: EnvironmentInjector,
-    destroyRef: DestroyRef,
-    router: Router,
-    api: PostApiService
-  ): PostsCrudStore => {
-    const store = new GenericFeatureStore<{ posts: Post[] }>({
-      scopeName: 'PostsCrudStore',
-      initialState: { posts: [] },
-      loaderFn: async () => ({ posts: await api.getPosts() }),
-      ttlMs: 0,
-    });
-
-    const initialUrl = router.url;
-    const sub = router.events
-      .pipe(filter((ev) => ev instanceof NavigationStart || ev instanceof NavigationEnd))
-      .subscribe((ev) => {
-        if (ev instanceof NavigationStart) {
-          store.pauseTtl();
-        } else if (ev instanceof NavigationEnd) {
-          if (router.url === initialUrl) {
-            store.resumeTtl();
-          } else {
-            store.pauseTtl();
-          }
-        }
-      });
-
-    destroyRef.onDestroy(() => {
-      sub.unsubscribe();
-      store.ngOnDestroy();
-    });
-
-    void store.reload();
-
+export const postsCrudStoreProvider = new FeatureStoreBuilder<{ posts: Post[] }>()
+  .withName('PostsCrudStore')
+  .withInitialState({ posts: [] })
+  .withLoaderFn(async (api: PostApiService) => ({ posts: await api.getPosts() }))
+  .addDependency(PostApiService)
+  .withSetup((store: PostsCrudStore, api: PostApiService) => {
     const extended = store as PostsCrudStore;
     extended.createPost = async (post) => {
       const created = await api.createPost(post);
@@ -66,7 +32,5 @@ export const postsCrudStoreProvider: Provider = {
       await api.deletePost(id);
       extended.updateState({ posts: extended.state().posts.filter((p) => p.id !== id) });
     };
-
-    return extended;
-  },
-};
+  })
+  .buildProvider(POSTS_CRUD_STORE_TOKEN);

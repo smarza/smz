@@ -35,14 +35,12 @@ import { Post } from './post.model';
     }
 
     @if (store.isResolved()) {
-      <!-- Add a counter of the number of posts -->
       <div>Number of posts: {{ store.state().posts.length }}</div>
-
       <div class="flex flex-col gap-2">
-        <div *ngFor="let post of store.state().posts; trackBy: trackById" class="border p-2 flex flex-col gap-2">
-          <input class="border p-1" [(ngModel)]="post.title" name="title-{{post.id}}" (blur)="updatePost(post)" />
-          <textarea class="border p-1" rows="2" [(ngModel)]="post.body" name="body-{{post.id}}" (blur)="updatePost(post)"></textarea>
-          <button pButton type="button" label="Delete" severity="danger" (click)="deletePost(post.id)"></button>
+        <div *ngFor="let p of store.state().posts; trackBy: trackById" class="border p-2 flex flex-col gap-2">
+          <input class="border p-1" [(ngModel)]="p.title" name="title-{{p.id}}" (blur)="updatePost(p)" />
+          <textarea class="border p-1" rows="2" [(ngModel)]="p.body" name="body-{{p.id}}" (blur)="updatePost(p)"></textarea>
+          <button pButton type="button" label="Delete" severity="danger" (click)="deletePost(p.id)"></button>
         </div>
       </div>
     }
