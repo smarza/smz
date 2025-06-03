@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import {
   inject,
   Injectable,
@@ -93,7 +94,7 @@ export abstract class GlobalStore<T> {
     this.lastFetchTimestamp = Date.now();
   }
 
-  private _scheduleTtlReload(): void {
+  protected _scheduleTtlReload(): void {
     const ttl = this.getTtlMs();
     if (ttl <= 0) return;
     if (this.ttlTimer) this._clearTtlTimer();
@@ -111,7 +112,7 @@ export abstract class GlobalStore<T> {
     }
   }
 
-  private _clearTtlTimer(): void {
+  protected _clearTtlTimer(): void {
     if (this.ttlTimer) {
       clearTimeout(this.ttlTimer);
       this.ttlTimer = null;

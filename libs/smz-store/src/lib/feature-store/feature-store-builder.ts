@@ -1,24 +1,26 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { DestroyRef, EnvironmentInjector, InjectionToken, Provider } from '@angular/core';
 import { NavigationEnd, NavigationStart, Router } from '@angular/router';
 import { filter } from 'rxjs/operators';
 import { GenericFeatureStore } from './generic-feature-store';
+import { getTokenName } from '../shared/injection-token-helper';
 
-export class FeatureStoreBuilder<TState, TActions extends GenericFeatureStore<TState> = GenericFeatureStore<TState>> {
+export class FeatureStoreBuilder<TState, TStore extends GenericFeatureStore<TState> = GenericFeatureStore<TState>> {
   private _initialState!: TState;
   private _loaderFn!: (...deps: any[]) => Promise<Partial<TState>>;
   private _ttlMs = 0;
   private _name!: string;
   private _deps: any[] = [];
-  private _setupFns: Array<(store: GenericFeatureStore<TState>, ...deps: any[]) => void> = [];
+  private _setupFns: Array<(store: TStore, ...deps: any[]) => void> = [];
 
   withAction(
-    name:  Extract<keyof TActions, string>,
+    name:  Extract<keyof TStore, string>,
     factory: (
-      store: GenericFeatureStore<TState>,
+      store: TStore,
       ...deps: any[]
     ) => (...args: any[]) => Promise<void>
   ): this {
-    this._setupFns.push((store: GenericFeatureStore<TState>, ...deps: any[]) => {
+    this._setupFns.push((store: TStore, ...deps: any[]) => {
       (store as any)[name] = factory(store, ...deps);
     });
     return this;
@@ -31,11 +33,6 @@ export class FeatureStoreBuilder<TState, TActions extends GenericFeatureStore<TS
 
   withLoaderFn(fn: (...deps: any[]) => Promise<Partial<TState>>): this {
     this._loaderFn = fn;
-    return this;
-  }
-
-  withName(name: string): this {
-    this._name = name;
     return this;
   }
 
@@ -65,13 +62,18 @@ export class FeatureStoreBuilder<TState, TActions extends GenericFeatureStore<TS
         ...injectedDeps: any[]
       ) => {
 
+        if (!token) {
+          throw new Error('Token is required');
+        }
+
         const loader = () => this._loaderFn(...injectedDeps);
+
         const store = new GenericFeatureStore<TState>({
-          scopeName: this._name ?? (token as any).desc ?? token.toString(),
+          scopeName: this._name ?? getTokenName(token),
           initialState: this._initialState,
           loaderFn: loader,
           ttlMs: this._ttlMs,
-        });
+        }) as TStore;
 
         const initialUrl = router.url;
         const sub = router.events

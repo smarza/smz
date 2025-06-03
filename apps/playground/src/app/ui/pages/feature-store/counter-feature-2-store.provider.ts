@@ -12,7 +12,7 @@ export const COUNTER_FEATURE_2_STORE_TOKEN = new InjectionToken<GenericFeatureSt
 
 export const counterFeature2StoreProvider = (() => {
   const builder = new FeatureStoreBuilder<CounterState>()
-    .withName('CounterFeature2Store')
+    // .withName('CounterFeature2Store')
     .withInitialState({ count: 0 })
     .withLoaderFn(async () => {
       // Simulate async fetch of a random starting count
