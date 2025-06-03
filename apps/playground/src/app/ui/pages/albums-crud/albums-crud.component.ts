@@ -37,8 +37,15 @@ import { Album } from './album.model';
       <div>Number of albums: {{ store.state().albums.length }}</div>
       <div class="flex flex-col gap-2">
         <div *ngFor="let a of store.state().albums; trackBy: trackById" class="border p-2 flex gap-2 items-center">
-          <input class="border p-1 flex-1" [(ngModel)]="a.title" name="title-{{a.id}}" (blur)="updateAlbum(a)" />
-          <button pButton type="button" icon="pi pi-trash" severity="danger" (click)="deleteAlbum(a.id)"></button>
+          @if (editingAlbum?.id === a.id) {
+            <input class="border p-1 flex-1" [(ngModel)]="editingAlbum.title" name="title-{{a.id}}" (blur)="saveEdit()" />
+            <button pButton type="button" icon="pi pi-check" (click)="saveEdit()"></button>
+            <button pButton type="button" icon="pi pi-times" (click)="cancelEdit()"></button>
+          } @else {
+            <div class="flex-1">{{ a.title }}</div>
+            <button pButton type="button" icon="pi pi-pencil" (click)="startEdit(a)"></button>
+            <button pButton type="button" icon="pi pi-trash" severity="danger" (click)="deleteAlbum(a.id)"></button>
+          }
         </div>
       </div>
     }
@@ -47,6 +54,7 @@ import { Album } from './album.model';
 export class AlbumsCrudComponent {
   readonly store: AlbumsCrudStore = inject(ALBUMS_CRUD_STORE_TOKEN);
   newTitle = '';
+  editingAlbum: Album | null = null;
 
   trackById = (_: number, item: Album) => item.id;
 
@@ -57,8 +65,18 @@ export class AlbumsCrudComponent {
     this.newTitle = '';
   }
 
-  async updateAlbum(album: Album) {
-    await this.store.updateAlbum(album);
+  startEdit(album: Album) {
+    this.editingAlbum = { ...album };
+  }
+
+  cancelEdit() {
+    this.editingAlbum = null;
+  }
+
+  async saveEdit() {
+    if (!this.editingAlbum) return;
+    await this.store.updateAlbum(this.editingAlbum);
+    this.editingAlbum = null;
   }
 
   async deleteAlbum(id: number) {

@@ -38,9 +38,21 @@ import { Post } from './post.model';
       <div>Number of posts: {{ store.state().posts.length }}</div>
       <div class="flex flex-col gap-2">
         <div *ngFor="let p of store.state().posts; trackBy: trackById" class="border p-2 flex flex-col gap-2">
-          <input class="border p-1" [(ngModel)]="p.title" name="title-{{p.id}}" (blur)="updatePost(p)" />
-          <textarea class="border p-1" rows="2" [(ngModel)]="p.body" name="body-{{p.id}}" (blur)="updatePost(p)"></textarea>
-          <button pButton type="button" label="Delete" severity="danger" (click)="deletePost(p.id)"></button>
+          @if (editingPost?.id === p.id) {
+            <input class="border p-1" [(ngModel)]="editingPost.title" name="title-{{p.id}}" (blur)="saveEdit()" />
+            <textarea class="border p-1" rows="2" [(ngModel)]="editingPost.body" name="body-{{p.id}}" (blur)="saveEdit()"></textarea>
+            <div class="flex gap-2">
+              <button pButton type="button" label="Save" icon="pi pi-check" (click)="saveEdit()"></button>
+              <button pButton type="button" label="Cancel" icon="pi pi-times" (click)="cancelEdit()"></button>
+            </div>
+          } @else {
+            <div class="font-bold">{{ p.title }}</div>
+            <div>{{ p.body }}</div>
+            <div class="flex gap-2">
+              <button pButton type="button" label="Edit" icon="pi pi-pencil" (click)="startEdit(p)"></button>
+              <button pButton type="button" label="Delete" severity="danger" (click)="deletePost(p.id)"></button>
+            </div>
+          }
         </div>
       </div>
     }
@@ -50,6 +62,7 @@ export class PostsCrudComponent {
   readonly store: PostsCrudStore = inject(POSTS_CRUD_STORE_TOKEN);
   newTitle = '';
   newBody = '';
+  editingPost: Post | null = null;
 
   trackById = (_: number, item: Post) => item.id;
 
@@ -62,8 +75,18 @@ export class PostsCrudComponent {
     this.newBody = '';
   }
 
-  async updatePost(post: Post) {
-    await this.store.updatePost(post);
+  startEdit(post: Post) {
+    this.editingPost = { ...post };
+  }
+
+  cancelEdit() {
+    this.editingPost = null;
+  }
+
+  async saveEdit() {
+    if (!this.editingPost) return;
+    await this.store.updatePost(this.editingPost);
+    this.editingPost = null;
   }
 
   async deletePost(id: number) {
