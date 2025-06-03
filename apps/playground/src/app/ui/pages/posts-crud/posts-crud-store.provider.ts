@@ -3,7 +3,7 @@ import { FeatureStoreBuilder, GenericFeatureStore } from '@smz-ui/store';
 import { Post } from './post.model';
 import { PostApiService } from './post.api';
 
-export interface PostsCrudState {
+interface PostsCrudState {
   posts: Post[];
 }
 
@@ -13,9 +13,7 @@ export interface PostsCrudStore extends GenericFeatureStore<PostsCrudState> {
   deletePost(id: number): Promise<void>;
 }
 
-export const POSTS_CRUD_STORE_TOKEN = new InjectionToken<PostsCrudStore>('POSTS_CRUD_STORE_TOKEN');
-
-export const postsCrudStoreProvider = new FeatureStoreBuilder<PostsCrudState, PostsCrudStore>()
+const postsCrudStoreBuilder = new FeatureStoreBuilder<PostsCrudState, PostsCrudStore>()
   .withInitialState({ posts: [] })
   .withLoaderFn(async (api: PostApiService) => ({ posts: await api.getPosts() }))
   .addDependency(PostApiService)
@@ -32,5 +30,8 @@ export const postsCrudStoreProvider = new FeatureStoreBuilder<PostsCrudState, Po
   .withAction('deletePost', (store: PostsCrudStore, api: PostApiService) => async (id: number) => {
     await api.deletePost(id);
     store.updateState({ posts: store.state().posts.filter((p) => p.id !== id) });
-  })
-  .buildProvider(POSTS_CRUD_STORE_TOKEN);
+  });
+
+export const POSTS_CRUD_STORE_TOKEN = new InjectionToken<PostsCrudStore>('POSTS_CRUD_STORE_TOKEN');
+
+export const postsCrudStoreProvider = postsCrudStoreBuilder.buildProvider(POSTS_CRUD_STORE_TOKEN);
