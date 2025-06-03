@@ -29,7 +29,17 @@ export abstract class FeatureStore<T> extends GlobalStore<T> implements OnDestro
   resumeTtl(): void {
     this.logger.debug(`resuming TTL`);
     this._ttlPaused = false;
-    this._scheduleTtlReload?.();
+    if (this.isResolved()) {
+      this._scheduleTtlReload();
+    }
+  }
+
+  protected override _scheduleTtlReload(): void {
+    if (this._ttlPaused) {
+      this.logger.debug(`TTL paused, skipping reload scheduling`);
+      return;
+    }
+    super._scheduleTtlReload();
   }
 
 }
