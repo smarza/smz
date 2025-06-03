@@ -135,5 +135,13 @@ export abstract class GlobalStore<T> {
     }
     return obj;
   }
+
+  public getStatusSignal(): WritableSignal<GlobalStoreStatus> {
+    return this.statusSignal;
+  }
+
+  public getErrorSignal(): WritableSignal<Error | null> {
+    return this.errorSignal;
+  }
 }
 
