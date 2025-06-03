@@ -7,6 +7,7 @@ import {
   computed,
   effect,
   signal,
+  EffectRef,
 } from '@angular/core';
 import { LoggingService, ScopedLogger } from '@smz-ui/core';
 
@@ -34,6 +35,11 @@ export abstract class GlobalStore<T> {
 
   private ttlTimer: ReturnType<typeof setTimeout> | null = null;
   private lastFetchTimestamp: number | null = null;
+
+  protected readonly actionStatusSignals = new Map<
+    string,
+    { signal: WritableSignal<GlobalStoreStatus>; effectRef: EffectRef }
+  >();
 
   constructor(scopeName?: string) {
     this.logger = this.loggingService.scoped(
@@ -142,6 +148,27 @@ export abstract class GlobalStore<T> {
 
   public getErrorSignal(): WritableSignal<Error | null> {
     return this.errorSignal;
+  }
+
+  public getActionStatusSignal(key: string): WritableSignal<GlobalStoreStatus> {
+    let entry = this.actionStatusSignals.get(key);
+    if (!entry) {
+      const status = signal<GlobalStoreStatus>('idle');
+      const ref = effect(() => {
+        const s = status();
+        this.logger.debug(`[${key}] status changed →`, s);
+      });
+      entry = { signal: status, effectRef: ref };
+      this.actionStatusSignals.set(key, entry);
+    }
+    return entry.signal;
+  }
+
+  public clearActionStatusSignal(key: string): void {
+    const entry = this.actionStatusSignals.get(key);
+    if (!entry) return;
+    entry.effectRef.destroy();
+    this.actionStatusSignals.delete(key);
   }
 }
 
