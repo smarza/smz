@@ -8,6 +8,8 @@ import { counterFeature1StoreProvider } from './ui/pages/feature-store/counter-f
 import { GlobalStoreDemoComponent } from './ui/pages/global-store-demo/global-store-demo.component';
 import { PostsCrudComponent } from './ui/pages/posts-crud/posts-crud.component';
 import { postsCrudStoreProvider } from './ui/pages/posts-crud/posts-crud-store.provider';
+import { AlbumsCrudComponent } from './ui/pages/albums-crud/albums-crud.component';
+import { albumsCrudStoreProvider } from './ui/pages/albums-crud/albums-crud-store.provider';
 
 export const appRoutes: Route[] = [
   {
@@ -42,6 +44,12 @@ export const appRoutes: Route[] = [
             component: PostsCrudComponent,
             data: { title: 'Posts CRUD Demo' },
             providers: [postsCrudStoreProvider],
+          },
+          {
+            path: 'albums-crud',
+            component: AlbumsCrudComponent,
+            data: { title: 'Albums CRUD Demo' },
+            providers: [albumsCrudStoreProvider],
           },
           { path: 'global-store', component: GlobalStoreDemoComponent, data: { title: 'Global Store Demo' } },
           { path: '', redirectTo: 'home', pathMatch: 'full' },

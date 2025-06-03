@@ -103,3 +103,9 @@ export const postsCrudStoreProvider = new FeatureStoreBuilder<{ posts: Post[] }>
   })
   .buildProvider(POSTS_CRUD_STORE_TOKEN);
 ```
+
+### Albums CRUD Demo
+
+The `albums-crud` route showcases another simple CRUD using `GenericFeatureStore`.
+It follows the same pattern as the posts demo but manages albums retrieved from
+`https://jsonplaceholder.typicode.com/albums`.
