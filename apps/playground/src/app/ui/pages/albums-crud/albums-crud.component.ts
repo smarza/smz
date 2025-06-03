@@ -36,17 +36,23 @@ import { Album } from './album.model';
     @if (store.isResolved()) {
       <div>Number of albums: {{ store.state().albums.length }}</div>
       <div class="flex flex-col gap-2">
-        <div *ngFor="let a of store.state().albums; trackBy: trackById" class="border p-2 flex gap-2 items-center">
-          @if (editingAlbum?.id === a.id) {
-            <input class="border p-1 flex-1" [(ngModel)]="editingAlbum.title" name="title-{{a.id}}" (blur)="saveEdit()" />
-            <button pButton type="button" icon="pi pi-check" (click)="saveEdit()"></button>
-            <button pButton type="button" icon="pi pi-times" (click)="cancelEdit()"></button>
-          } @else {
-            <div class="flex-1">{{ a.title }}</div>
-            <button pButton type="button" icon="pi pi-pencil" (click)="startEdit(a)"></button>
-            <button pButton type="button" icon="pi pi-trash" severity="danger" (click)="deleteAlbum(a.id)"></button>
-          }
-        </div>
+
+        @for (a of store.state().albums; track a.id) {
+          <div class="border p-2 flex gap-2 items-center">
+
+            @if (editingAlbum && editingAlbum.id === a.id) {
+              <input class="border p-1 flex-1" [(ngModel)]="editingAlbum.title" name="title-{{a.id}}" />
+              <button pButton type="button" icon="pi pi-check" (click)="saveEdit()"></button>
+              <button pButton type="button" icon="pi pi-times" (click)="cancelEdit()"></button>
+            } @else {
+              <div class="flex-1">{{ a.title }}</div>
+              <button pButton type="button" icon="pi pi-pencil" (click)="startEdit(a)"></button>
+              <button pButton type="button" icon="pi pi-trash" severity="danger" (click)="deleteAlbum(a.id)"></button>
+            }
+
+          </div>
+        }
+
       </div>
     }
   `
@@ -66,7 +72,7 @@ export class AlbumsCrudComponent {
   }
 
   startEdit(album: Album) {
-    this.editingAlbum = { ...album };
+    this.editingAlbum = { id: album.id, title: album.title };
   }
 
   cancelEdit() {

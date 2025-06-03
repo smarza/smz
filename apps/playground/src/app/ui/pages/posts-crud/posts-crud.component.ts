@@ -37,10 +37,13 @@ import { Post } from './post.model';
     @if (store.isResolved()) {
       <div>Number of posts: {{ store.state().posts.length }}</div>
       <div class="flex flex-col gap-2">
-        <div *ngFor="let p of store.state().posts; trackBy: trackById" class="border p-2 flex flex-col gap-2">
-          @if (editingPost?.id === p.id) {
-            <input class="border p-1" [(ngModel)]="editingPost.title" name="title-{{p.id}}" (blur)="saveEdit()" />
-            <textarea class="border p-1" rows="2" [(ngModel)]="editingPost.body" name="body-{{p.id}}" (blur)="saveEdit()"></textarea>
+
+        @for (p of store.state().posts; track p.id) {
+        <div class="border p-2 flex flex-col gap-2">
+
+          @if (editingPost && editingPost.id === p.id) {
+            <input class="border p-1" [(ngModel)]="editingPost.title" name="title-{{p.id}}" />
+            <textarea class="border p-1" rows="2" [(ngModel)]="editingPost.body" name="body-{{p.id}}"></textarea>
             <div class="flex gap-2">
               <button pButton type="button" label="Save" icon="pi pi-check" (click)="saveEdit()"></button>
               <button pButton type="button" label="Cancel" icon="pi pi-times" (click)="cancelEdit()"></button>
@@ -53,7 +56,10 @@ import { Post } from './post.model';
               <button pButton type="button" label="Delete" severity="danger" (click)="deletePost(p.id)"></button>
             </div>
           }
+
         </div>
+        }
+
       </div>
     }
   `
