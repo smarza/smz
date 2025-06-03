@@ -7,19 +7,33 @@ import { Album } from './album.model';
 export class AlbumApiService {
   constructor(private http: HttpClient) {}
 
-  getAlbums() {
+  private async simulateDelayAndError() {
+    // Random delay between 300ms and 1500ms
+    const delay = Math.random() * 1200 + 300;
+    await new Promise(res => setTimeout(res, delay));
+    // 20% chance to throw an error
+    if (Math.random() < 0.2) {
+      throw new Error('Simulated API error');
+    }
+  }
+
+  async getAlbums() {
+    await this.simulateDelayAndError();
     return firstValueFrom(this.http.get<Album[]>('https://jsonplaceholder.typicode.com/albums'));
   }
 
-  createAlbum(album: Omit<Album, 'id'>) {
+  async createAlbum(album: Omit<Album, 'id'>) {
+    await this.simulateDelayAndError();
     return firstValueFrom(this.http.post<Album>('https://jsonplaceholder.typicode.com/albums', album));
   }
 
-  updateAlbum(album: Album) {
+  async updateAlbum(album: Album) {
+    await this.simulateDelayAndError();
     return firstValueFrom(this.http.put<Album>(`https://jsonplaceholder.typicode.com/albums/${album.id}`, album));
   }
 
-  deleteAlbum(id: number) {
+  async deleteAlbum(id: number) {
+    await this.simulateDelayAndError();
     return firstValueFrom(this.http.delete<void>(`https://jsonplaceholder.typicode.com/albums/${id}`));
   }
 }

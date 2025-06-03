@@ -4,6 +4,7 @@ import { NavigationEnd, NavigationStart, Router } from '@angular/router';
 import { filter } from 'rxjs/operators';
 import { GenericFeatureStore } from './generic-feature-store';
 import { getTokenName } from '../shared/injection-token-helper';
+import { wrapActionWithStatus } from './action-wrapper';
 
 export class FeatureStoreBuilder<TState, TStore extends GenericFeatureStore<TState> = GenericFeatureStore<TState>> {
   private _initialState!: TState;
@@ -21,7 +22,8 @@ export class FeatureStoreBuilder<TState, TStore extends GenericFeatureStore<TSta
     ) => (...args: any[]) => Promise<void>
   ): this {
     this._setupFns.push((store: TStore, ...deps: any[]) => {
-      (store as any)[name] = factory(store, ...deps);
+      const action = factory(store, ...deps);
+      (store as any)[name] = wrapActionWithStatus(store, action);
     });
     return this;
   }
