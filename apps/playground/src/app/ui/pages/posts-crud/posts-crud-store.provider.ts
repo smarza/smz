@@ -16,7 +16,6 @@ export interface PostsCrudStore extends GenericFeatureStore<PostsCrudState> {
 export const POSTS_CRUD_STORE_TOKEN = new InjectionToken<PostsCrudStore>('POSTS_CRUD_STORE_TOKEN');
 
 export const postsCrudStoreProvider = new FeatureStoreBuilder<PostsCrudState, PostsCrudStore>()
-  // .withName('PostsCrudStore')
   .withInitialState({ posts: [] })
   .withLoaderFn(async (api: PostApiService) => ({ posts: await api.getPosts() }))
   .addDependency(PostApiService)

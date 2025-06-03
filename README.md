@@ -84,7 +84,6 @@ The store is built using `FeatureStoreBuilder` and the `withAction()` helper to 
 
 ```ts
 export const postsCrudStoreProvider = new FeatureStoreBuilder<{ posts: Post[] }>()
-  .withName('PostsCrudStore')
   .withInitialState({ posts: [] })
   .withLoaderFn(async (api: PostApiService) => ({ posts: await api.getPosts() }))
   .addDependency(PostApiService)

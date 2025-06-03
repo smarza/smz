@@ -36,8 +36,8 @@ export class FeatureStoreBuilder<TState, TStore extends GenericFeatureStore<TSta
     return this;
   }
 
-  withTtlMs(ttlMs: number): this {
-    this._ttlMs = ttlMs;
+  withAutoRefresh(milliseconds: number): this {
+    this._ttlMs = milliseconds;
     return this;
   }
 

@@ -1,5 +1,7 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { EnvironmentInjector, InjectionToken, Provider } from '@angular/core';
 import { GenericGlobalStore } from './generic-global-store';
+import { getTokenName } from '../shared/injection-token-helper';
 
 export class GlobalStoreBuilder<T> {
   private _initialState!: T;
@@ -17,16 +19,12 @@ export class GlobalStoreBuilder<T> {
     return this;
   }
 
-  withName(name: string): this {
-    this._name = name;
+  withAutoRefresh(milliseconds: number): this {
+    this._ttlMs = milliseconds;
     return this;
   }
 
-  withTtlMs(ttlMs: number): this {
-    this._ttlMs = ttlMs;
-    return this;
-  }
-
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   addDependency(_dep: any): this {
     return this;
   }
@@ -36,14 +34,22 @@ export class GlobalStoreBuilder<T> {
     return {
       provide: token,
       useFactory: (env: EnvironmentInjector, ...injectedDeps: any[]) => {
+
+        if (!token) {
+          throw new Error('Token is required');
+        }
+
         const loader = () => this._loaderFn(...injectedDeps);
+
         const store = new GenericGlobalStore<T>({
-          scopeName: this._name ?? (token as any).desc ?? token.toString(),
+          scopeName: this._name ?? getTokenName(token),
           initialState: this._initialState,
           loaderFn: loader,
           ttlMs: this._ttlMs,
         });
+
         void store.reload();
+
         return store;
       },
       deps: depsArray,

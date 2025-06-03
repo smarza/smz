@@ -1,9 +1,11 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import {
   EnvironmentInjector,
   Provider,
   InjectionToken,
 } from '@angular/core';
 import { GenericResourceStore } from './generic-resource-store';
+import { getTokenName } from '../shared/injection-token-helper';
 
 export class ResourceStoreBuilder<
   T,
@@ -41,16 +43,11 @@ export class ResourceStoreBuilder<
     return this;
   }
 
-  withName(name: string): this {
-    this._name = name;
-    return this;
-  }
-
   /**
    * If automatic revalidation (TTL) is desired, specify the time in milliseconds.
    */
-  withTtlMs(ttlMs: number): this {
-    this._ttlMs = ttlMs;
+  withAutoRefresh(milliseconds: number): this {
+    this._ttlMs = milliseconds;
     return this;
   }
 
@@ -58,6 +55,7 @@ export class ResourceStoreBuilder<
    * Adds a dependency that will be injected in the factory.
    * Example: .addDependency(UserApiService)
    */
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   addDependency(dep: any): this {
     // We store the class in the list but don't need to keep it here
     return this;
@@ -74,6 +72,11 @@ export class ResourceStoreBuilder<
     token: InjectionToken<GenericResourceStore<T, P>>,
     extraDeps: any[] = []
   ): Provider {
+
+    if (!token) {
+      throw new Error('Token is required');
+    }
+
     // Angular will inject, in this order: EnvironmentInjector and each class in extraDeps
     const depsArray = [EnvironmentInjector, ...extraDeps];
 
@@ -89,7 +92,7 @@ export class ResourceStoreBuilder<
 
         // Instantiate the GenericResourceStore
         const store = new GenericResourceStore<T, P>({
-          scopeName: this._name ?? (token as any).desc ?? token.toString(),
+          scopeName: this._name ?? getTokenName(token),
           initialParams: this._initialParams,
           defaultValue: this._defaultValue,
           loaderFn: adaptedLoader,
