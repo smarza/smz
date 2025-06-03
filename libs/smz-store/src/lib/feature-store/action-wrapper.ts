@@ -2,21 +2,27 @@
 /*
  * Utility to wrap store actions with status and error handling.
  */
-export function wrapActionWithStatus<TStore extends { getStatusSignal: () => any; getErrorSignal: () => any }>(
+export function wrapActionWithStatus<TStore extends {
+  getStatusSignal: () => any;
+  getErrorSignal: () => any;
+  getActionStatusSignal?: (key: string) => any;
+}>(
   store: TStore,
-  action: (...args: any[]) => Promise<void>
+  action: (...args: any[]) => Promise<void>,
+  key: string
 ): (...args: any[]) => Promise<void> {
   return async (...args: any[]) => {
-    store.getStatusSignal().set('loading');
+    const status = store.getActionStatusSignal?.(key) ?? store.getStatusSignal();
+    status.set('loading');
     store.getErrorSignal().set(null);
     try {
       await action(...args);
-      store.getStatusSignal().set('resolved');
+      status.set('resolved');
     } catch (err) {
       const wrapped = err instanceof Error ? err : new Error(String(err));
       store.getErrorSignal().set(wrapped);
-      store.getStatusSignal().set('error');
+      status.set('error');
       throw wrapped;
     }
   };
-} 
+}

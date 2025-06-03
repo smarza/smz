@@ -18,6 +18,9 @@ export abstract class FeatureStore<T> extends GlobalStore<T> implements OnDestro
   ngOnDestroy(): void {
     this.logger.debug(`destroying`);
     this._clearTtlTimer?.();
+    for (const key of this.actionStatusSignals.keys()) {
+      this.clearActionStatusSignal(key);
+    }
   }
 
   pauseTtl(): void {

@@ -23,7 +23,7 @@ export class FeatureStoreBuilder<TState, TStore extends GenericFeatureStore<TSta
   ): this {
     this._setupFns.push((store: TStore, ...deps: any[]) => {
       const action = factory(store, ...deps);
-      (store as any)[name] = wrapActionWithStatus(store, action);
+      (store as any)[name] = wrapActionWithStatus(store, action, name as string);
     });
     return this;
   }
