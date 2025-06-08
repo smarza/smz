@@ -29,7 +29,6 @@ export const appConfig: ApplicationConfig = {
     provideHttpClient(withFetch()),
     provideAnimationsAsync(),
     providePrimeNG({ theme: { preset: Aura, options: { darkModeSelector: '.app-dark' } } }),
-    // provideSmzLogging(() => [{ logging: appLogging }]),
     provideSmzUILayout(() => [
       {
         sidebar: appSidebar,

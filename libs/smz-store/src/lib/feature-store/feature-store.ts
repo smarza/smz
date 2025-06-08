@@ -24,12 +24,20 @@ export abstract class FeatureStore<T, TStore> extends GlobalStore<T, TStore> imp
   }
 
   pauseTtl(): void {
+    if (this._ttlPaused) {
+      return;
+    }
+
     this.logger.debug(`pausing TTL`);
     this._ttlPaused = true;
     this._clearTtlTimer?.();
   }
 
   resumeTtl(): void {
+    if (!this._ttlPaused) {
+      return;
+    }
+
     this.logger.debug(`resuming TTL`);
     this._ttlPaused = false;
     if (this.isResolved()) {

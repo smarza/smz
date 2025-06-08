@@ -82,12 +82,13 @@ export class FeatureStoreBuilder<TState, TStore extends GenericFeatureStore<TSta
           .pipe(filter((ev) => ev instanceof NavigationStart || ev instanceof NavigationEnd))
           .subscribe((ev) => {
             if (ev instanceof NavigationStart) {
-              store.pauseTtl();
+              const targetUrl = (ev as NavigationStart).url;
+              if (targetUrl !== router.url) {
+                store.pauseTtl();
+              }
             } else if (ev instanceof NavigationEnd) {
               if (router.url === initialUrl) {
                 store.resumeTtl();
-              } else {
-                store.pauseTtl();
               }
             }
           });
