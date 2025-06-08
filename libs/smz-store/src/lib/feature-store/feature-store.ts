@@ -6,7 +6,7 @@ import { GlobalStore } from '../global-store/global-store';
  * injector. It exists only while the feature that provided it is active.
  */
 @Injectable()
-export abstract class FeatureStore<T> extends GlobalStore<T> implements OnDestroy {
+export abstract class FeatureStore<T, TStore> extends GlobalStore<T, TStore> implements OnDestroy {
   private readonly destroyRef = inject(DestroyRef);
   private _ttlPaused = false;
 
@@ -19,7 +19,7 @@ export abstract class FeatureStore<T> extends GlobalStore<T> implements OnDestro
     this.logger.debug(`destroying`);
     this._clearTtlTimer?.();
     for (const key of this.actionStatusSignals.keys()) {
-      this.clearActionStatusSignal(key);
+      this.clearActionStatusSignal(key as Extract<keyof TStore, string>);
     }
   }
 

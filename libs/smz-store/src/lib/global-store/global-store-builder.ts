@@ -3,7 +3,7 @@ import { EnvironmentInjector, InjectionToken, Provider } from '@angular/core';
 import { GenericGlobalStore } from './generic-global-store';
 import { getTokenName } from '../shared/injection-token-helper';
 
-export class GlobalStoreBuilder<T> {
+export class GlobalStoreBuilder<T, TStore> {
   private _initialState!: T;
   private _loaderFn!: (...deps: any[]) => Promise<Partial<T>>;
   private _ttlMs = 0;
@@ -29,7 +29,7 @@ export class GlobalStoreBuilder<T> {
     return this;
   }
 
-  buildProvider(token: InjectionToken<GenericGlobalStore<T>>, extraDeps: any[] = []): Provider {
+  buildProvider(token: InjectionToken<GenericGlobalStore<T, TStore>>, extraDeps: any[] = []): Provider {
     const depsArray = [EnvironmentInjector, ...extraDeps];
     return {
       provide: token,
@@ -41,7 +41,7 @@ export class GlobalStoreBuilder<T> {
 
         const loader = () => this._loaderFn(...injectedDeps);
 
-        const store = new GenericGlobalStore<T>({
+        const store = new GenericGlobalStore<T, TStore>({
           scopeName: this._name ?? getTokenName(token),
           initialState: this._initialState,
           loaderFn: loader,

@@ -1,6 +1,6 @@
 import { FeatureStore } from './feature-store';
 
-export class GenericFeatureStore<TState> extends FeatureStore<TState> {
+export class GenericFeatureStore<TState, TStore> extends FeatureStore<TState, TStore> {
   private readonly _initialState: TState;
   private readonly _loaderFn: () => Promise<Partial<TState>>;
   private readonly _ttlMs: number;

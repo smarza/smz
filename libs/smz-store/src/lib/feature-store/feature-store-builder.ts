@@ -6,7 +6,7 @@ import { GenericFeatureStore } from './generic-feature-store';
 import { getTokenName } from '../shared/injection-token-helper';
 import { wrapActionWithStatus } from './action-wrapper';
 
-export class FeatureStoreBuilder<TState, TStore extends GenericFeatureStore<TState> = GenericFeatureStore<TState>> {
+export class FeatureStoreBuilder<TState, TStore extends GenericFeatureStore<TState, TStore> = GenericFeatureStore<TState, any>> {
   private _initialState!: TState;
   private _loaderFn!: (...deps: any[]) => Promise<Partial<TState>>;
   private _ttlMs = 0;
@@ -23,7 +23,7 @@ export class FeatureStoreBuilder<TState, TStore extends GenericFeatureStore<TSta
   ): this {
     this._setupFns.push((store: TStore, ...deps: any[]) => {
       const action = factory(store, ...deps);
-      (store as any)[name] = wrapActionWithStatus(store, action, name as string);
+      (store as any)[name] = wrapActionWithStatus(store as any, action, name);
     });
     return this;
   }
@@ -48,12 +48,12 @@ export class FeatureStoreBuilder<TState, TStore extends GenericFeatureStore<TSta
     return this;
   }
 
-  withSetup(fn: (store: GenericFeatureStore<TState>, ...deps: any[]) => void): this {
+  withSetup(fn: (store: GenericFeatureStore<TState, TStore>, ...deps: any[]) => void): this {
     this._setupFns.push(fn);
     return this;
   }
 
-  buildProvider(token: InjectionToken<GenericFeatureStore<TState>>, extraDeps: any[] = []): Provider {
+  buildProvider(token: InjectionToken<GenericFeatureStore<TState, TStore>>, extraDeps: any[] = []): Provider {
     const depsArray = [EnvironmentInjector, DestroyRef, Router, ...this._deps, ...extraDeps];
     return {
       provide: token,
@@ -70,7 +70,7 @@ export class FeatureStoreBuilder<TState, TStore extends GenericFeatureStore<TSta
 
         const loader = () => this._loaderFn(...injectedDeps);
 
-        const store = new GenericFeatureStore<TState>({
+        const store = new GenericFeatureStore<TState, TStore>({
           scopeName: this._name ?? getTokenName(token),
           initialState: this._initialState,
           loaderFn: loader,

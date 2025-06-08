@@ -14,7 +14,7 @@ import { LoggingService, ScopedLogger } from '@smz-ui/core';
 export type GlobalStoreStatus = 'idle' | 'loading' | 'resolved' | 'error';
 
 @Injectable({ providedIn: 'root' })
-export abstract class GlobalStore<T> {
+export abstract class GlobalStore<T, TStore> {
   protected readonly stateSignal: WritableSignal<T> = signal<T>(
     this._deepFreeze(this.getInitialState())
   );
@@ -150,7 +150,7 @@ export abstract class GlobalStore<T> {
     return this.errorSignal;
   }
 
-  public getActionStatusSignal(key: string): WritableSignal<GlobalStoreStatus> {
+  public getActionStatusSignal(key: Extract<keyof TStore, string>): WritableSignal<GlobalStoreStatus> {
     let entry = this.actionStatusSignals.get(key);
     if (!entry) {
       const status = signal<GlobalStoreStatus>('idle');
@@ -164,7 +164,7 @@ export abstract class GlobalStore<T> {
     return entry.signal;
   }
 
-  public clearActionStatusSignal(key: string): void {
+  public clearActionStatusSignal(key: Extract<keyof TStore, string>): void {
     const entry = this.actionStatusSignals.get(key);
     if (!entry) return;
     entry.effectRef.destroy();
