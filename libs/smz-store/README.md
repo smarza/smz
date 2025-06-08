@@ -121,3 +121,14 @@ interface StoreHistoryEvent {
   timestamp: number;
 }
 ```
+
+## Running Benchmarks
+
+Execute the store benchmarks with:
+
+```bash
+npm run benchmark:store
+```
+
+Benchmark results are written to `tests/smz-store/benchmarks`.
+
