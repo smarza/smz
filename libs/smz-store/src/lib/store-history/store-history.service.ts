@@ -1,5 +1,5 @@
 import { Injectable, InjectionToken, inject, Provider } from '@angular/core';
-import { LoggingService } from '@smz-ui/core';
+import { LOGGING_SERVICE } from '@smz-ui/core';
 
 export interface StoreHistoryEvent {
   storeScope: string;
@@ -36,7 +36,7 @@ export class NullStoreHistoryService implements IStoreHistoryService {
 @Injectable({ providedIn: 'root' })
 export class StoreHistoryService implements IStoreHistoryService {
   private readonly events: StoreHistoryEvent[] = [];
-  private readonly logger = inject(LoggingService).scoped('StoreHistory');
+  private readonly logger = inject(LOGGING_SERVICE).scoped('StoreHistory');
 
   constructor() {
     this.logger.debug('Service initialized with history tracking enabled');

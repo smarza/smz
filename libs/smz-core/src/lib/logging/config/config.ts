@@ -7,8 +7,6 @@ export type SmzLoggingConfigType = {
 @Injectable({ providedIn: 'root' })
 export class SmzLogging {
     logging = signal<LoggingConfig>({
-      enabled: false,
-      production: false,
       level: 'debug',
       restrictedScopes: []
     });

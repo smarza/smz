@@ -11,7 +11,7 @@ import {
   runInInjectionContext,
   Injector,
 } from '@angular/core';
-import { LoggingService, ScopedLogger } from '@smz-ui/core';
+import { LOGGING_SERVICE, ScopedLogger } from '@smz-ui/core';
 import { STORE_HISTORY_SERVICE } from '../store-history/store-history.service';
 
 export type GlobalStoreStatus = 'idle' | 'loading' | 'resolved' | 'error';
@@ -34,7 +34,7 @@ export abstract class GlobalStore<T, TStore> {
   readonly isError = computed(() => this.status() === 'error');
   readonly isResolved = computed(() => this.status() === 'resolved');
 
-  protected readonly loggingService = inject(LoggingService);
+  protected readonly loggingService = inject(LOGGING_SERVICE);
   protected logger: ScopedLogger;
   private readonly injector = inject(Injector);
 

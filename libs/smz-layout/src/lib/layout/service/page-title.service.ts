@@ -6,13 +6,12 @@ import {
   RouterStateSnapshot
 } from '@angular/router';
 import { filter } from 'rxjs/operators';
-import { LoggingService, LoggingScope, ScopedLogger } from '@smz-ui/core';
+import { LoggingScope, ScopedLogger, LOGGING_SERVICE } from '@smz-ui/core';
 
 @Injectable({ providedIn: 'root' })
 export class PageTitleService {
   private router = inject(Router);
-  private loggingService = inject(LoggingService);
-  private logger: ScopedLogger = this.loggingService.scoped(LoggingScope.PageTitleService);
+  private logger: ScopedLogger = inject(LOGGING_SERVICE).scoped(LoggingScope.PageTitleService);
   // signal que guarda o título (ou null)
   private titleSignal = signal<string | null>(null);
 

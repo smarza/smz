@@ -10,7 +10,7 @@ import {
 } from '@angular/core';
 import { resource, ResourceRef } from '@angular/core';
 import { ResourceStatus } from '@angular/core';
-import { LoggingService, ScopedLogger } from '@smz-ui/core';
+import { LOGGING_SERVICE, ScopedLogger } from '@smz-ui/core';
 import { STORE_HISTORY_SERVICE } from '../store-history/store-history.service';
 
 /**
@@ -106,7 +106,7 @@ export abstract class ResourceStore<T, P extends Record<string, any> | void> {
   readonly isResolved: Signal<boolean> = computed(() => this.status() === 'resolved');
 
   /** LoggingService and logger */
-  protected readonly loggingService = inject(LoggingService);
+  protected readonly loggingService = inject(LOGGING_SERVICE);
   protected logger: ScopedLogger;
 
   /** Timestamp (ms) of the last successful fetch */
