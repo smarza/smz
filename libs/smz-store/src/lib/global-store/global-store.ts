@@ -8,6 +8,8 @@ import {
   effect,
   signal,
   EffectRef,
+  runInInjectionContext,
+  Injector,
 } from '@angular/core';
 import { LoggingService, ScopedLogger } from '@smz-ui/core';
 
@@ -32,6 +34,7 @@ export abstract class GlobalStore<T, TStore> {
 
   protected readonly loggingService = inject(LoggingService);
   protected logger: ScopedLogger;
+  private readonly injector = inject(Injector);
 
   private ttlTimer: ReturnType<typeof setTimeout> | null = null;
   private lastFetchTimestamp: number | null = null;
@@ -154,9 +157,11 @@ export abstract class GlobalStore<T, TStore> {
     let entry = this.actionStatusSignals.get(key);
     if (!entry) {
       const status = signal<GlobalStoreStatus>('idle');
-      const ref = effect(() => {
-        const s = status();
-        this.logger.debug(`[${key}] status changed →`, s);
+      const ref = runInInjectionContext(this.injector, () => {
+        return effect(() => {
+          const s = status();
+          this.logger.debug(`[${key}] status changed →`, s);
+        });
       });
       entry = { signal: status, effectRef: ref };
       this.actionStatusSignals.set(key, entry);

@@ -16,7 +16,6 @@ export interface CounterStore extends GenericFeatureStore<CounterState, CounterS
 const counterStoreBuilder = new FeatureStoreBuilder<CounterState, CounterStore>()
   .withInitialState({ count: 0 })
   .withLoaderFn(async () => ({ count: Math.floor(Math.random() * 10) }))
-  .withAutoRefresh(1 * 10 * 1000)
   .withAction('increment', (store: CounterStore) => async () => {
     store.updateState({ count: store.state().count + 1 });
   })
