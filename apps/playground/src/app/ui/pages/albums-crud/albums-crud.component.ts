@@ -18,7 +18,8 @@ import { Album } from './album.model';
 
     <form class="flex flex-col gap-2" (ngSubmit)="addAlbum()">
       <input class="border p-1" type="text" placeholder="Title" [(ngModel)]="newTitle" name="title" />
-      <button pButton type="submit" label="Create Album"></button>
+      <button pButton type="submit" label="Create Album" [disabled]="createStatus() === 'loading'"></button>
+      @if (createStatus() === 'loading') { <span>Creating...</span> }
     </form>
 
     <div class="flex gap-2">
@@ -37,17 +38,19 @@ import { Album } from './album.model';
       <div>Number of albums: {{ store.state().albums.length }}</div>
       <div class="flex flex-col gap-2">
 
-        @for (a of store.state().albums; track a.id) {
+      @for (a of store.state().albums; track a.id) {
           <div class="border p-2 flex gap-2 items-center">
 
             @if (editingAlbum && editingAlbum.id === a.id) {
               <input class="border p-1 flex-1" [(ngModel)]="editingAlbum.title" name="title-{{a.id}}" />
-              <button pButton type="button" icon="pi pi-check" (click)="saveEdit()"></button>
+              <button pButton type="button" icon="pi pi-check" (click)="saveEdit()" [disabled]="updateStatus() === 'loading'"></button>
               <button pButton type="button" icon="pi pi-times" (click)="cancelEdit()"></button>
+              @if (updateStatus() === 'loading') { <span>Saving...</span> }
             } @else {
               <div class="flex-1">{{ a.title }}</div>
-              <button pButton type="button" icon="pi pi-pencil" (click)="startEdit(a)"></button>
-              <button pButton type="button" icon="pi pi-trash" severity="danger" (click)="deleteAlbum(a.id)"></button>
+              <button pButton type="button" icon="pi pi-pencil" (click)="startEdit(a)" [disabled]="updateStatus() === 'loading'"></button>
+              <button pButton type="button" icon="pi pi-trash" severity="danger" (click)="deleteAlbum(a.id)" [disabled]="deleteStatus() === 'loading'"></button>
+              @if (deleteStatus() === 'loading') { <span>Deleting...</span> }
             }
 
           </div>
@@ -59,6 +62,9 @@ import { Album } from './album.model';
 })
 export class AlbumsCrudComponent {
   readonly store: AlbumsCrudStore = inject(ALBUMS_CRUD_STORE_TOKEN);
+  createStatus = this.store.getActionStatusSignal('createAlbum');
+  updateStatus = this.store.getActionStatusSignal('updateAlbum');
+  deleteStatus = this.store.getActionStatusSignal('deleteAlbum');
   newTitle = '';
   editingAlbum: Album | null = null;
 

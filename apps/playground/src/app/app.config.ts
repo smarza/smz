@@ -9,7 +9,6 @@ import Aura from '@primeng/themes/aura';
 import { appRoutes } from './app.routes';
 import { appLogging } from './layout/app.logging';
 import { provideSmzUILayout, SMZ_UI_LAYOUT_CONFIG } from '@smz-ui/layout';
-import { provideSmzLogging } from '@smz-ui/core';
 import { appLayoutState } from './layout/app.state';
 import { appSidebar } from './layout/app.sidebar';
 import { appFooter } from './layout/app.footer';
@@ -17,6 +16,8 @@ import { appTopbar } from './layout/app.topbar';
 import { appLayout } from './layout/app.layout';
 import { userStoreProvider } from './ui/pages/user-resource/user-resource-store.provider';
 import { authGlobalStoreProvider } from './ui/pages/global-store-demo/auth-global-store.provider';
+import { provideStoreHistory } from '@smz-ui/store';
+import { provideLogging } from '@smz-ui/core';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -28,7 +29,6 @@ export const appConfig: ApplicationConfig = {
     provideHttpClient(withFetch()),
     provideAnimationsAsync(),
     providePrimeNG({ theme: { preset: Aura, options: { darkModeSelector: '.app-dark' } } }),
-    provideSmzLogging(() => [{ logging: appLogging }]),
     provideSmzUILayout(() => [
       {
         sidebar: appSidebar,
@@ -42,6 +42,8 @@ export const appConfig: ApplicationConfig = {
       const config = inject(SMZ_UI_LAYOUT_CONFIG);
       config.hasClaim = () => true;
     }),
+    provideStoreHistory(),
+    provideLogging(appLogging),
     userStoreProvider,
     authGlobalStoreProvider
   ],

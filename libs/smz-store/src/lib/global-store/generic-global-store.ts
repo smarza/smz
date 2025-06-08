@@ -1,6 +1,6 @@
 import { GlobalStore } from './global-store';
 
-export class GenericGlobalStore<T> extends GlobalStore<T> {
+export class GenericGlobalStore<T, TStore> extends GlobalStore<T, TStore> {
   private readonly _initialState: T;
   private readonly _loaderFn: () => Promise<Partial<T>>;
   private readonly _ttlMs: number;

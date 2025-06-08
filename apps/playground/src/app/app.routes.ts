@@ -10,6 +10,7 @@ import { PostsCrudComponent } from './ui/pages/posts-crud/posts-crud.component';
 import { postsCrudStoreProvider } from './ui/pages/posts-crud/posts-crud-store.provider';
 import { AlbumsCrudComponent } from './ui/pages/albums-crud/albums-crud.component';
 import { albumsCrudStoreProvider } from './ui/pages/albums-crud/albums-crud-store.provider';
+import { StoreHistoryComponent } from './ui/pages/store-history/store-history.component';
 
 export const appRoutes: Route[] = [
   {
@@ -51,7 +52,16 @@ export const appRoutes: Route[] = [
             data: { title: 'Albums CRUD Demo' },
             providers: [albumsCrudStoreProvider],
           },
-          { path: 'global-store', component: GlobalStoreDemoComponent, data: { title: 'Global Store Demo' } },
+          {
+            path: 'global-store',
+            component: GlobalStoreDemoComponent,
+            data: { title: 'Global Store Demo' },
+          },
+          {
+            path: 'store-history',
+            component: StoreHistoryComponent,
+            data: { title: 'Store History' },
+          },
           { path: '', redirectTo: 'home', pathMatch: 'full' },
         ]
       },

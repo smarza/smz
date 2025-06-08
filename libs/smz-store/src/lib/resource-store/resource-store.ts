@@ -10,7 +10,8 @@ import {
 } from '@angular/core';
 import { resource, ResourceRef } from '@angular/core';
 import { ResourceStatus } from '@angular/core';
-import { LoggingService, ScopedLogger } from '@smz-ui/core';
+import { LOGGING_SERVICE, ScopedLogger } from '@smz-ui/core';
+import { STORE_HISTORY_SERVICE } from '../store-history/store-history.service';
 
 /**
  * Generic base class for any store that loads a single "resource" T
@@ -105,7 +106,7 @@ export abstract class ResourceStore<T, P extends Record<string, any> | void> {
   readonly isResolved: Signal<boolean> = computed(() => this.status() === 'resolved');
 
   /** LoggingService and logger */
-  protected readonly loggingService = inject(LoggingService);
+  protected readonly loggingService = inject(LOGGING_SERVICE);
   protected logger: ScopedLogger;
 
   /** Timestamp (ms) of the last successful fetch */
@@ -114,14 +115,23 @@ export abstract class ResourceStore<T, P extends Record<string, any> | void> {
   /** TTL timer (if any) */
   private ttlTimer: ReturnType<typeof setTimeout> | null = null;
 
+  private readonly scopeName: string;
+  protected readonly storeHistoryService = inject(STORE_HISTORY_SERVICE);
+
   constructor(scopeName?: string) {
-    this.logger = this.loggingService.scoped(
-      scopeName ?? (this.constructor as { name: string }).name
-    );
+    this.scopeName = scopeName ?? (this.constructor as { name: string }).name;
+    this.logger = this.loggingService.scoped(this.scopeName);
+
     // 5) Automatic logs about valueRaw
     effect(() => {
       const v = this.valueRaw();
       this.logger.debug(`valueRaw updated →`, v);
+      this.storeHistoryService.trackEvent({
+        storeScope: this.scopeName,
+        action: 'load',
+        params: this.paramsSignal() === undefined ? {} : this.paramsSignal() as Record<string, unknown>,
+        status: this._mapStatus(this.status())
+      });
     });
 
     // 6) Automatic logs about statusRaw
@@ -166,6 +176,18 @@ export abstract class ResourceStore<T, P extends Record<string, any> | void> {
   /** Executes the real API call and returns Promise<T> */
   protected abstract loadFromApi(params: P): Promise<T>;
 
+  /** Maps ResourceStatus to store history status */
+  private _mapStatus(status: ResourceStatus): 'idle' | 'loading' | 'resolved' | 'error' {
+    switch (status) {
+      case 'reloading':
+        return 'loading';
+      case 'local':
+        return 'resolved';
+      default:
+        return status;
+    }
+  }
+
   /**
    * Changes P and triggers an automatic reload.
    * Cancels the TTL timer if present.
@@ -176,6 +198,12 @@ export abstract class ResourceStore<T, P extends Record<string, any> | void> {
     // Clear any previous error before changing the parameter
     this.errorSignal.set(null);
     this.paramsSignal.set(this._deepFreezeParams(newParams));
+    this.storeHistoryService.trackEvent({
+      storeScope: this.scopeName,
+      action: 'setParams',
+      params: newParams === undefined ? {} : newParams,
+      status: this._mapStatus(this.status())
+    });
   }
 
   /**
@@ -186,6 +214,12 @@ export abstract class ResourceStore<T, P extends Record<string, any> | void> {
     this.logger.info(`reload()`);
     this._clearTtlTimer();
     this.errorSignal.set(null);
+    this.storeHistoryService.trackEvent({
+      storeScope: this.scopeName,
+      action: 'reload',
+      params: {},
+      status: this._mapStatus(this.status())
+    });
     this.resourceRef.reload();
   }
 

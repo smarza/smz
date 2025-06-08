@@ -2,4 +2,5 @@
 export enum LoggingScope {
   NavigationService = 'NavigationService',
   PageTitleService = 'PageTitleService',
+  All = '*'
 }

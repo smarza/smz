@@ -8,16 +8,21 @@ export interface CounterState {
   count: number;
 }
 
-export const COUNTER_FEATURE_1_STORE_TOKEN = new InjectionToken<GenericFeatureStore<CounterState>>('COUNTER_FEATURE_1_STORE_TOKEN');
+export interface CounterStore extends GenericFeatureStore<CounterState, CounterStore> {
+  increment(): void;
+  decrement(): void;
+}
 
-export const counterFeature1StoreProvider = (() => {
-  const builder = new FeatureStoreBuilder<CounterState>()
-    .withInitialState({ count: 0 })
-    .withLoaderFn(async () => {
-      // Simulate async fetch of a random starting count
-      return { count: Math.floor(Math.random() * 10) };
-    })
-    .withAutoRefresh(1 * 10 * 1000); // 10 seconds
+const counterStoreBuilder = new FeatureStoreBuilder<CounterState, CounterStore>()
+  .withInitialState({ count: 0 })
+  .withLoaderFn(async () => ({ count: Math.floor(Math.random() * 10) }))
+  .withAction('increment', (store: CounterStore) => async () => {
+    store.updateState({ count: store.state().count + 1 });
+  })
+  .withAction('decrement', (store: CounterStore) => async () => {
+    store.updateState({ count: store.state().count - 1 });
+  });
 
-  return builder.buildProvider(COUNTER_FEATURE_1_STORE_TOKEN);
-})();
+export const COUNTER_FEATURE_1_STORE_TOKEN = new InjectionToken<CounterStore>('COUNTER_FEATURE_1_STORE_TOKEN');
+
+export const counterFeature1StoreProvider = counterStoreBuilder.buildProvider(COUNTER_FEATURE_1_STORE_TOKEN);

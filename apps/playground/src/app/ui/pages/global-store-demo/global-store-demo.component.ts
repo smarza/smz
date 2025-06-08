@@ -2,8 +2,7 @@ import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ButtonModule } from 'primeng/button';
 import { GenericGlobalStore } from '@smz-ui/store';
-import { AUTH_GLOBAL_STORE_TOKEN } from './auth-global-store.provider';
-import { AuthState } from './auth.model';
+import { AUTH_GLOBAL_STORE_TOKEN, AuthGlobalState } from './auth-global-store.provider';
 
 @Component({
   selector: 'app-global-store-demo',
@@ -30,6 +29,7 @@ import { AuthState } from './auth.model';
       <div class="flex flex-col gap-2 bg-gray-200 text-gray-800 p-2 rounded-md">
         <div>Token: {{ data.token }}</div>
         <div>User: {{ data.currentUser?.name }}</div>
+        <div>Email: {{ data.currentUser?.email }}</div>
       </div>
     }
 
@@ -39,7 +39,7 @@ import { AuthState } from './auth.model';
   `
 })
 export class GlobalStoreDemoComponent {
-  readonly store: GenericGlobalStore<AuthState> = inject(AUTH_GLOBAL_STORE_TOKEN);
+  readonly store: GenericGlobalStore<AuthGlobalState, never> = inject(AUTH_GLOBAL_STORE_TOKEN);
 
   clear() {
     this.store.updateState({ token: null, currentUser: null });

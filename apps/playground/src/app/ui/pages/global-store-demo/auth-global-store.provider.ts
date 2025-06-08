@@ -3,17 +3,20 @@ import {
   GlobalStoreBuilder,
   GenericGlobalStore,
 } from '@smz-ui/store';
-import { AuthState } from './auth.model';
 import { AuthApiService } from './auth.api';
+import { User } from '../user-resource/user.model';
 
-export const AUTH_GLOBAL_STORE_TOKEN = new InjectionToken<GenericGlobalStore<AuthState>>('AUTH_GLOBAL_STORE_TOKEN');
+export interface AuthGlobalState {
+  token: string | null;
+  currentUser: User | null;
+}
 
-export const authGlobalStoreProvider = (() => {
-  const builder = new GlobalStoreBuilder<AuthState>()
-    .withInitialState({ token: null, currentUser: null })
-    .withLoaderFn((api: AuthApiService) => api.fetchAuthData())
-    .addDependency(AuthApiService)
-    .withAutoRefresh(2 * 60 * 1000); // 2 minutes
+const authGlobalStoreBuilder = new GlobalStoreBuilder<AuthGlobalState, never>()
+  .withInitialState({ token: null, currentUser: null })
+  .addDependency(AuthApiService)
+  .withLoaderFn((api: AuthApiService) => (api.fetchAuthData()))
+  .withAutoRefresh(2 * 60 * 1000);
 
-  return builder.buildProvider(AUTH_GLOBAL_STORE_TOKEN, [AuthApiService]);
-})();
+export const AUTH_GLOBAL_STORE_TOKEN = new InjectionToken<GenericGlobalStore<AuthGlobalState, never>>('AUTH_GLOBAL_STORE_TOKEN');
+
+export const authGlobalStoreProvider = authGlobalStoreBuilder.buildProvider(AUTH_GLOBAL_STORE_TOKEN);

@@ -2,7 +2,7 @@ import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ButtonModule } from 'primeng/button';
 import { GenericFeatureStore } from '@smz-ui/store';
-import { COUNTER_FEATURE_1_STORE_TOKEN, CounterState } from './counter-feature-1-store.provider';
+import { COUNTER_FEATURE_1_STORE_TOKEN, CounterState, CounterStore } from './counter-feature-1-store.provider';
 
 @Component({
   selector: 'app-counter-feature-1',
@@ -16,6 +16,7 @@ import { COUNTER_FEATURE_1_STORE_TOKEN, CounterState } from './counter-feature-1
 
     <div class="flex gap-2">
       <button pButton type="button" label="Increment" icon="pi pi-plus" (click)="increment()"></button>
+      <button pButton type="button" label="Decrement" icon="pi pi-minus" (click)="decrement()"></button>
       <button pButton type="button" label="Reload Random" icon="pi pi-refresh" severity="info" (click)="reload()"></button>
     </div>
 
@@ -40,11 +41,14 @@ import { COUNTER_FEATURE_1_STORE_TOKEN, CounterState } from './counter-feature-1
   `
 })
 export class CounterFeature1Component {
-  public readonly store: GenericFeatureStore<CounterState> = inject(COUNTER_FEATURE_1_STORE_TOKEN);
+  public readonly store: CounterStore = inject(COUNTER_FEATURE_1_STORE_TOKEN);
 
   increment() {
-    const current = this.store.state().count;
-    this.store.updateState({ count: current + 1 });
+    this.store.increment();
+  }
+
+  decrement() {
+    this.store.decrement();
   }
 
   reload() {

@@ -7,13 +7,18 @@ import {
   computed,
   effect,
   signal,
+  EffectRef,
+  runInInjectionContext,
+  Injector,
 } from '@angular/core';
-import { LoggingService, ScopedLogger } from '@smz-ui/core';
+import { LOGGING_SERVICE, ScopedLogger } from '@smz-ui/core';
+import { STORE_HISTORY_SERVICE } from '../store-history/store-history.service';
 
 export type GlobalStoreStatus = 'idle' | 'loading' | 'resolved' | 'error';
 
 @Injectable({ providedIn: 'root' })
-export abstract class GlobalStore<T> {
+export abstract class GlobalStore<T, TStore> {
+  private readonly scopeName: string;
   protected readonly stateSignal: WritableSignal<T> = signal<T>(
     this._deepFreeze(this.getInitialState())
   );
@@ -29,16 +34,23 @@ export abstract class GlobalStore<T> {
   readonly isError = computed(() => this.status() === 'error');
   readonly isResolved = computed(() => this.status() === 'resolved');
 
-  protected readonly loggingService = inject(LoggingService);
+  protected readonly loggingService = inject(LOGGING_SERVICE);
   protected logger: ScopedLogger;
+  private readonly injector = inject(Injector);
 
   private ttlTimer: ReturnType<typeof setTimeout> | null = null;
   private lastFetchTimestamp: number | null = null;
 
+  protected readonly actionStatusSignals = new Map<
+    string,
+    { signal: WritableSignal<GlobalStoreStatus>; effectRef: EffectRef; params?: any }
+  >();
+
+  protected readonly storeHistoryService = inject(STORE_HISTORY_SERVICE);
+
   constructor(scopeName?: string) {
-    this.logger = this.loggingService.scoped(
-      scopeName ?? (this.constructor as { name: string }).name
-    );
+    this.scopeName = scopeName ?? (this.constructor as { name: string }).name;
+    this.logger = this.loggingService.scoped(this.scopeName);
     effect(() => {
       const s = this.stateSignal();
       this.logger.debug(`state updated →`, s);
@@ -47,6 +59,12 @@ export abstract class GlobalStore<T> {
     effect(() => {
       const st = this.statusSignal();
       this.logger.debug(`status changed →`, st);
+      this.storeHistoryService.trackEvent({
+        storeScope: this.scopeName,
+        action: 'load',
+        params: {},
+        status: st,
+      });
     });
 
     effect(() => {
@@ -142,6 +160,37 @@ export abstract class GlobalStore<T> {
 
   public getErrorSignal(): WritableSignal<Error | null> {
     return this.errorSignal;
+  }
+
+  public getActionStatusSignal(key: Extract<keyof TStore, string>, params?: any): WritableSignal<GlobalStoreStatus> {
+    let entry = this.actionStatusSignals.get(key);
+    if (!entry) {
+      const status = signal<GlobalStoreStatus>('idle');
+      const ref = runInInjectionContext(this.injector, () => {
+        return effect(() => {
+          const s = status();
+          this.logger.debug(`[${key}] status changed →`, s);
+          this.storeHistoryService.trackEvent({
+            storeScope: this.scopeName,
+            action: key,
+            params: entry?.params ?? {},
+            status: s,
+          });
+        });
+      });
+      entry = { signal: status, effectRef: ref, params };
+      this.actionStatusSignals.set(key, entry);
+    } else if (params) {
+      entry.params = params;
+    }
+    return entry.signal;
+  }
+
+  public clearActionStatusSignal(key: Extract<keyof TStore, string>): void {
+    const entry = this.actionStatusSignals.get(key);
+    if (!entry) return;
+    entry.effectRef.destroy();
+    this.actionStatusSignals.delete(key);
   }
 }
 

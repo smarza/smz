@@ -1,107 +1,100 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // logging.service.ts
-import { Injectable, signal, computed, inject } from '@angular/core';
-import { SMZ_LOGGING_CONFIG } from './config/provide';
-import { LoggingScope } from './logging-scope';
+import { Injectable, InjectionToken, inject, Provider } from '@angular/core';
 import { LoggingConfig } from './logging-config';
-import { ScopedLogger } from './scoped-logger';
+import { LoggingScope } from './logging-scope';
+
+export type LogLevel = 'debug' | 'info' | 'warn' | 'error';
+
+export const LOGGING_CONFIG = new InjectionToken<LoggingConfig>('LOGGING_CONFIG');
+
+export interface ILoggingService {
+  debug(message: string, ...args: any[]): void;
+  info(message: string, ...args: any[]): void;
+  warn(message: string, ...args: any[]): void;
+  error(message: string, ...args: any[]): void;
+  scoped(scope: string): ILoggingService;
+}
 
 @Injectable({ providedIn: 'root' })
-export class LoggingService {
-  private configFn = inject(SMZ_LOGGING_CONFIG).logging as () => LoggingConfig;
-  private enabled = signal<boolean>(this.configFn().enabled);
+export class NullLoggingService implements ILoggingService {
+  debug(): void {
+    // Null implementation
+  }
+  info(): void {
+    // Null implementation
+  }
+  warn(): void {
+    // Null implementation
+  }
+  error(): void {
+    // Null implementation
+  }
+  scoped(): ILoggingService {
+    return this;
+  }
+}
 
-  // nível de each log: debug=0, info=1, warn=2, error=3
-  private levelRank: Record<string, number> = { debug: 0, info: 1, warn: 2, error: 3 };
+@Injectable({ providedIn: 'root' })
+export class LoggingService implements ILoggingService {
+  private scope = 'App';
+  private readonly levelRank: Record<LogLevel, number> = { debug: 0, info: 1, warn: 2, error: 3 };
+  private readonly config = inject(LOGGING_CONFIG);
 
-  /** expose current settings */
-  public readonly isEnabled = computed(() => this.enabled());
-  public readonly currentLevel = computed(() => this.configFn().level ?? 'debug');
-  public readonly activeScopes = computed(() => this.configFn().restrictedScopes ?? []);
-
-  /** toggle logging global */
-  public enable(): void { this.enabled.set(true); }
-  public disable(): void { this.enabled.set(false); }
-  public toggle(): void { this.enabled.update(e => !e); }
-
-  private shouldLog(
-    method: 'debug' | 'info' | 'warn' | 'error',
-    owner?: LoggingScope | string
-  ): boolean {
-    if (!this.enabled()) {
+  private shouldLog(method: LogLevel, scope: string): boolean {
+    // Check level
+    if (this.levelRank[method] < this.levelRank[this.config.level]) {
       return false;
     }
-    const cfg = this.configFn();
-    // nunca log de debug em produção
-    if (cfg.production && method === 'debug') {
-      return false;
+
+    // Check scopes
+    const restrictedScopes = this.config.restrictedScopes;
+    if (restrictedScopes && restrictedScopes.length > 0) {
+      return restrictedScopes.some(s => s === scope || s === LoggingScope.All);
     }
-    // respeita nivel configurado
-    const cfgLevel = cfg.level ?? 'debug';
-    if (this.levelRank[method] < this.levelRank[cfgLevel]) {
-      return false;
-    }
-    // respeita scopes se fornecido
-    const scopes = cfg.restrictedScopes;
-    if (scopes && scopes.length > 0 && owner) {
-      if (!(scopes.includes(LoggingScope['*' as keyof typeof LoggingScope]) || scopes.includes(owner as LoggingScope))) {
-        return false;
-      }
-    }
+
     return true;
   }
 
-  public log(message?: unknown, ...optionalParams: unknown[]): void {
-    if (!this.shouldLog('info')) return;
-    console.log(message, ...optionalParams);
+  public debug(message: string, ...args: any[]): void {
+    if (this.shouldLog('debug', this.scope)) {
+      console.debug(`[${this.scope}] ${message}`, ...args);
+    }
   }
 
-  public info(message?: unknown, ...optionalParams: unknown[]): void {
-    if (!this.shouldLog('info')) return;
-    console.log(message, ...optionalParams);
+  public info(message: string, ...args: any[]): void {
+    if (this.shouldLog('info', this.scope)) {
+      console.info(`[${this.scope}] ${message}`, ...args);
+    }
   }
 
-  public warn(message?: unknown, ...optionalParams: unknown[]): void {
-    if (!this.shouldLog('warn')) return;
-    console.warn(message, ...optionalParams);
+  public warn(message: string, ...args: any[]): void {
+    if (this.shouldLog('warn', this.scope)) {
+      console.warn(`[${this.scope}] ${message}`, ...args);
+    }
   }
 
-  public error(message?: unknown, ...optionalParams: unknown[]): void {
-    if (!this.shouldLog('error')) return;
-    console.error(message, ...optionalParams);
+  public error(message: string, ...args: any[]): void {
+    if (this.shouldLog('error', this.scope)) {
+      console.error(`[${this.scope}] ${message}`, ...args);
+    }
   }
 
-  public debug(message?: unknown, ...optionalParams: unknown[]): void {
-    if (!this.shouldLog('debug')) return;
-    console.debug(message, ...optionalParams);
+  public scoped(scope: string): ILoggingService {
+    const service = new LoggingService();
+    service.scope = scope;
+    return service;
   }
+}
 
-  /**
-   * Retorna um logger com prefixo [owner] e restringe pelos scopes do config
-   * owner agora é um LoggingScope
-   */
-  public scoped(owner: LoggingScope | string): ScopedLogger {
-    const prefix = `[${owner}]`;
-    return {
-      log: (msg?: unknown, ...params: unknown[]) => {
-        if (!this.shouldLog('info', owner)) return;
-        console.log(prefix, msg, ...params);
-      },
-      info: (msg?: unknown, ...params: unknown[]) => {
-        if (!this.shouldLog('info', owner)) return;
-        console.log(prefix, msg, ...params);
-      },
-      warn: (msg?: unknown, ...params: unknown[]) => {
-        if (!this.shouldLog('warn', owner)) return;
-        console.warn(prefix, msg, ...params);
-      },
-      error: (msg?: unknown, ...params: unknown[]) => {
-        if (!this.shouldLog('error', owner)) return;
-        console.error(prefix, msg, ...params);
-      },
-      debug: (msg?: unknown, ...params: unknown[]) => {
-        if (!this.shouldLog('debug', owner)) return;
-        console.debug(prefix, msg, ...params);
-      }
-    };
-  }
+export const LOGGING_SERVICE = new InjectionToken<ILoggingService>('LOGGING_SERVICE', {
+  providedIn: 'root',
+  factory: () => inject(NullLoggingService)
+});
+
+export function provideLogging(config: LoggingConfig = { level: 'info' }): Provider[] {
+  return [
+    { provide: LOGGING_CONFIG, useValue: config },
+    { provide: LOGGING_SERVICE, useClass: LoggingService }
+  ];
 }

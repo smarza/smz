@@ -3,7 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { resource } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 import { delay, catchError } from 'rxjs/operators';
-import { LoggingService, ScopedLogger } from '@smz-ui/layout';
+import { LOGGING_SERVICE, ScopedLogger } from '@smz-ui/core';
 
 interface User {
   id: number;
@@ -26,7 +26,7 @@ interface UserWithPosts {
 @Injectable({ providedIn: 'root' })
 export class HttpResourceService {
   private http = inject(HttpClient);
-  private logger: ScopedLogger = inject(LoggingService).scoped(HttpResourceService.name);
+  private logger: ScopedLogger = inject(LOGGING_SERVICE).scoped(HttpResourceService.name);
 
   /** Current user ID to drive all three resources */
   readonly userId = signal<number>(1);
