@@ -12,7 +12,7 @@ import {
   Injector,
 } from '@angular/core';
 import { LoggingService, ScopedLogger } from '@smz-ui/core';
-import { StoreHistoryService } from '../store-history/store-history.service';
+import { STORE_HISTORY_SERVICE } from '../store-history/store-history.service';
 
 export type GlobalStoreStatus = 'idle' | 'loading' | 'resolved' | 'error';
 
@@ -46,7 +46,7 @@ export abstract class GlobalStore<T, TStore> {
     { signal: WritableSignal<GlobalStoreStatus>; effectRef: EffectRef }
   >();
 
-  protected readonly storeHistoryService = inject(StoreHistoryService);
+  protected readonly storeHistoryService = inject(STORE_HISTORY_SERVICE);
 
   constructor(scopeName?: string) {
     this.scopeName = scopeName ?? (this.constructor as { name: string }).name;

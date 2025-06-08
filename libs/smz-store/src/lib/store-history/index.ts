@@ -1,1 +1,1 @@
-export * from './store-history.service';
+export { STORE_HISTORY_SERVICE, IStoreHistoryService, StoreHistoryEvent, provideStoreHistory } from './store-history.service';

@@ -17,7 +17,7 @@ import { appTopbar } from './layout/app.topbar';
 import { appLayout } from './layout/app.layout';
 import { userStoreProvider } from './ui/pages/user-resource/user-resource-store.provider';
 import { authGlobalStoreProvider } from './ui/pages/global-store-demo/auth-global-store.provider';
-import { STORE_HISTORY_ENABLED } from '@smz-ui/store';
+import { provideStoreHistory } from '@smz-ui/store';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -43,7 +43,7 @@ export const appConfig: ApplicationConfig = {
       const config = inject(SMZ_UI_LAYOUT_CONFIG);
       config.hasClaim = () => true;
     }),
-    { provide: STORE_HISTORY_ENABLED, useValue: true },
+    ...provideStoreHistory(false),
     userStoreProvider,
     authGlobalStoreProvider
   ],

@@ -1,6 +1,6 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { StoreHistoryService, StoreHistoryEvent } from '@smz-ui/store';
+import { StoreHistoryEvent, STORE_HISTORY_SERVICE, IStoreHistoryService } from '@smz-ui/store';
 import { FormsModule } from '@angular/forms';
 
 @Component({
@@ -70,18 +70,17 @@ import { FormsModule } from '@angular/forms';
   `,
 })
 export class StoreHistoryComponent implements OnInit, OnDestroy {
+  private storeHistory: IStoreHistoryService = inject(STORE_HISTORY_SERVICE);
   events: StoreHistoryEvent[] = [];
   filteredEvents: StoreHistoryEvent[] = [];
   availableStores: string[] = [];
   selectedStore = '';
-  private refreshInterval: any;
-
-  constructor(private storeHistory: StoreHistoryService) {}
+  private refreshInterval!: ReturnType<typeof setInterval>;
 
   ngOnInit(): void {
     this.loadEvents();
     // Auto-refresh a cada 2 segundos
-    this.refreshInterval = setInterval(() => this.loadEvents(), 2000);
+    this.refreshInterval = setInterval(() => this.loadEvents(), 10000);
   }
 
   ngOnDestroy(): void {
