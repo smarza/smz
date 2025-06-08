@@ -12,11 +12,13 @@ import {
   Injector,
 } from '@angular/core';
 import { LoggingService, ScopedLogger } from '@smz-ui/core';
+import { StoreHistoryService } from '../store-history/store-history.service';
 
 export type GlobalStoreStatus = 'idle' | 'loading' | 'resolved' | 'error';
 
 @Injectable({ providedIn: 'root' })
 export abstract class GlobalStore<T, TStore> {
+  private readonly scopeName: string;
   protected readonly stateSignal: WritableSignal<T> = signal<T>(
     this._deepFreeze(this.getInitialState())
   );
@@ -44,10 +46,11 @@ export abstract class GlobalStore<T, TStore> {
     { signal: WritableSignal<GlobalStoreStatus>; effectRef: EffectRef }
   >();
 
+  protected readonly storeHistoryService = inject(StoreHistoryService);
+
   constructor(scopeName?: string) {
-    this.logger = this.loggingService.scoped(
-      scopeName ?? (this.constructor as { name: string }).name
-    );
+    this.scopeName = scopeName ?? (this.constructor as { name: string }).name;
+    this.logger = this.loggingService.scoped(this.scopeName);
     effect(() => {
       const s = this.stateSignal();
       this.logger.debug(`state updated →`, s);
@@ -56,6 +59,11 @@ export abstract class GlobalStore<T, TStore> {
     effect(() => {
       const st = this.statusSignal();
       this.logger.debug(`status changed →`, st);
+      this.storeHistoryService.trackEvent({
+        storeScope: this.scopeName,
+        action: 'load',
+        status: st,
+      });
     });
 
     effect(() => {
@@ -155,12 +163,18 @@ export abstract class GlobalStore<T, TStore> {
 
   public getActionStatusSignal(key: Extract<keyof TStore, string>): WritableSignal<GlobalStoreStatus> {
     let entry = this.actionStatusSignals.get(key);
+    console.log('getActionStatusSignal _+++++++++++++', key, entry);
     if (!entry) {
       const status = signal<GlobalStoreStatus>('idle');
       const ref = runInInjectionContext(this.injector, () => {
         return effect(() => {
           const s = status();
           this.logger.debug(`[${key}] status changed →`, s);
+          this.storeHistoryService.trackEvent({
+            storeScope: this.scopeName,
+            action: key,
+            status: s,
+          });
         });
       });
       entry = { signal: status, effectRef: ref };

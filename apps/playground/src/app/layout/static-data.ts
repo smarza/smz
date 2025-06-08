@@ -11,6 +11,7 @@ export const INITIAL_SIDEBAR: MenuItem[] = [
             { label: 'Global Store Demo', icon: 'pi pi-fw pi-database', routerLink: ['/global-store'] },
             { label: 'Posts CRUD Demo', icon: 'pi pi-fw pi-database', routerLink: ['/posts-crud'] },
             { label: 'Albums CRUD Demo', icon: 'pi pi-fw pi-database', routerLink: ['/albums-crud'] },
+            { label: 'Store History', icon: 'pi pi-fw pi-history', routerLink: ['/store-history'] },
         ]
     }
 ]
