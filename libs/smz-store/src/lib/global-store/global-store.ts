@@ -43,7 +43,7 @@ export abstract class GlobalStore<T, TStore> {
 
   protected readonly actionStatusSignals = new Map<
     string,
-    { signal: WritableSignal<GlobalStoreStatus>; effectRef: EffectRef }
+    { signal: WritableSignal<GlobalStoreStatus>; effectRef: EffectRef; params?: any }
   >();
 
   protected readonly storeHistoryService = inject(STORE_HISTORY_SERVICE);
@@ -162,9 +162,8 @@ export abstract class GlobalStore<T, TStore> {
     return this.errorSignal;
   }
 
-  public getActionStatusSignal(key: Extract<keyof TStore, string>): WritableSignal<GlobalStoreStatus> {
+  public getActionStatusSignal(key: Extract<keyof TStore, string>, params?: any): WritableSignal<GlobalStoreStatus> {
     let entry = this.actionStatusSignals.get(key);
-    console.log('getActionStatusSignal _+++++++++++++', key, entry);
     if (!entry) {
       const status = signal<GlobalStoreStatus>('idle');
       const ref = runInInjectionContext(this.injector, () => {
@@ -174,13 +173,15 @@ export abstract class GlobalStore<T, TStore> {
           this.storeHistoryService.trackEvent({
             storeScope: this.scopeName,
             action: key,
-            params: {}, // TODO: add params
+            params: entry?.params ?? {},
             status: s,
           });
         });
       });
-      entry = { signal: status, effectRef: ref };
+      entry = { signal: status, effectRef: ref, params };
       this.actionStatusSignals.set(key, entry);
+    } else if (params) {
+      entry.params = params;
     }
     return entry.signal;
   }

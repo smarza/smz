@@ -5,18 +5,14 @@
 export function wrapActionWithStatus<TStore extends {
   getStatusSignal: () => any;
   getErrorSignal: () => any;
-  getActionStatusSignal?: (key: string) => any;
+  getActionStatusSignal?: (key: string, args: any[]) => any;
 }>(
   store: TStore,
   action: (...args: any[]) => Promise<void>,
   key: string
 ): (...args: any[]) => Promise<void> {
   return async (...args: any[]) => {
-    console.log('wrapActionWithStatus _+++++++++++++', key);
-    console.log('store', store);
-    console.log('action', action);
-    console.log('args', args);
-    const status = store.getActionStatusSignal?.(key) ?? store.getStatusSignal();
+    const status = store.getActionStatusSignal?.(key, args) ?? store.getStatusSignal();
     status.set('loading');
     store.getErrorSignal().set(null);
     try {
