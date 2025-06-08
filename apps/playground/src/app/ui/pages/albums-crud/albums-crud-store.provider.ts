@@ -7,7 +7,7 @@ interface AlbumsCrudState {
   albums: Album[];
 }
 
-export interface AlbumsCrudStore extends GenericFeatureStore<AlbumsCrudState> {
+export interface AlbumsCrudStore extends GenericFeatureStore<AlbumsCrudState, AlbumsCrudStore> {
   createAlbum(album: Omit<Album, 'id'>): Promise<void>;
   updateAlbum(album: Album): Promise<void>;
   deleteAlbum(id: number): Promise<void>;

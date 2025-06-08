@@ -19,7 +19,8 @@ import { Post } from './post.model';
     <form class="flex flex-col gap-2" (ngSubmit)="addPost()">
       <input class="border p-1" type="text" placeholder="Title" [(ngModel)]="newTitle" name="title" />
       <textarea class="border p-1" rows="3" placeholder="Body" [(ngModel)]="newBody" name="body"></textarea>
-      <button pButton type="submit" label="Create Post"></button>
+      <button pButton type="submit" label="Create Post" [disabled]="createStatus() === 'loading'"></button>
+      @if (createStatus() === 'loading') { <span>Creating...</span> }
     </form>
 
     <div class="flex gap-2">
@@ -45,15 +46,17 @@ import { Post } from './post.model';
             <input class="border p-1" [(ngModel)]="editingPost.title" name="title-{{p.id}}" />
             <textarea class="border p-1" rows="2" [(ngModel)]="editingPost.body" name="body-{{p.id}}"></textarea>
             <div class="flex gap-2">
-              <button pButton type="button" label="Save" icon="pi pi-check" (click)="saveEdit()"></button>
+              <button pButton type="button" label="Save" icon="pi pi-check" (click)="saveEdit()" [disabled]="updateStatus() === 'loading'"></button>
               <button pButton type="button" label="Cancel" icon="pi pi-times" (click)="cancelEdit()"></button>
+              @if (updateStatus() === 'loading') { <span>Saving...</span> }
             </div>
           } @else {
             <div class="font-bold">{{ p.title }}</div>
             <div>{{ p.body }}</div>
             <div class="flex gap-2">
-              <button pButton type="button" label="Edit" icon="pi pi-pencil" (click)="startEdit(p)"></button>
-              <button pButton type="button" label="Delete" severity="danger" (click)="deletePost(p.id)"></button>
+              <button pButton type="button" label="Edit" icon="pi pi-pencil" (click)="startEdit(p)" [disabled]="updateStatus() === 'loading'"></button>
+              <button pButton type="button" label="Delete" severity="danger" (click)="deletePost(p.id)" [disabled]="deleteStatus() === 'loading'"></button>
+              @if (deleteStatus() === 'loading') { <span>Deleting...</span> }
             </div>
           }
 
@@ -66,6 +69,9 @@ import { Post } from './post.model';
 })
 export class PostsCrudComponent {
   readonly store: PostsCrudStore = inject(POSTS_CRUD_STORE_TOKEN);
+  createStatus = this.store.getActionStatusSignal('createPost');
+  updateStatus = this.store.getActionStatusSignal('updatePost');
+  deleteStatus = this.store.getActionStatusSignal('deletePost');
   newTitle = '';
   newBody = '';
   editingPost: Post | null = null;

@@ -7,7 +7,7 @@ interface PostsCrudState {
   posts: Post[];
 }
 
-export interface PostsCrudStore extends GenericFeatureStore<PostsCrudState> {
+export interface PostsCrudStore extends GenericFeatureStore<PostsCrudState, PostsCrudStore> {
   createPost(post: Omit<Post, 'id'>): Promise<void>;
   updatePost(post: Post): Promise<void>;
   deletePost(id: number): Promise<void>;

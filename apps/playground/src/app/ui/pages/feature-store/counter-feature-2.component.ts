@@ -41,7 +41,7 @@ import { COUNTER_FEATURE_2_STORE_TOKEN, counterFeature2StoreProvider, CounterSta
   `
 })
 export class CounterFeature2Component {
-  public readonly store: GenericFeatureStore<CounterState> = inject(COUNTER_FEATURE_2_STORE_TOKEN);
+  public readonly store: GenericFeatureStore<CounterState, never> = inject(COUNTER_FEATURE_2_STORE_TOKEN);
 
   increment() {
     const current = this.store.state().count;
