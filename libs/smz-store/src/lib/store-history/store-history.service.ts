@@ -23,7 +23,6 @@ export interface IStoreHistoryService {
 @Injectable({ providedIn: 'root' })
 export class NullStoreHistoryService implements IStoreHistoryService {
   trackEvent(): void {
-    console.log('################################################## NULL TRACK EVENT');
     // To nothing
   }
   getEventsByStore(): StoreHistoryEvent[] { return []; }
@@ -43,7 +42,6 @@ export class StoreHistoryService implements IStoreHistoryService {
   }
 
   public trackEvent(event: Omit<StoreHistoryEvent, 'timestamp'>): void {
-    console.log('################################################## REAL TRACK EVENT');
     const historyEvent: StoreHistoryEvent = {
       ...event,
       timestamp: Date.now(),
@@ -68,14 +66,14 @@ export class StoreHistoryService implements IStoreHistoryService {
   }
 }
 
-export const STORE_HISTORY_SERVICE = new InjectionToken<IStoreHistoryService>('STORE_HISTORY_SERVICE');
+export const STORE_HISTORY_SERVICE = new InjectionToken<IStoreHistoryService>('STORE_HISTORY_SERVICE', {
+  providedIn: 'root',
+  factory: () => inject(NullStoreHistoryService)
+});
 
-export function provideStoreHistory(enabled = false): Provider {
+export function provideStoreHistory(): Provider {
   return {
     provide: STORE_HISTORY_SERVICE,
-    useFactory: () => {
-      console.log('################################################## STORE_HISTORY_SERVICE', enabled);
-      return enabled ? inject(StoreHistoryService) : inject(NullStoreHistoryService);
-    }
+    useClass: StoreHistoryService
   };
 }

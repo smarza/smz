@@ -43,7 +43,7 @@ export const appConfig: ApplicationConfig = {
       const config = inject(SMZ_UI_LAYOUT_CONFIG);
       config.hasClaim = () => true;
     }),
-    provideStoreHistory(true),
+    provideStoreHistory(),
     userStoreProvider,
     authGlobalStoreProvider
   ],
