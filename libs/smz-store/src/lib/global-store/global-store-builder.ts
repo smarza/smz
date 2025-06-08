@@ -8,6 +8,7 @@ export class GlobalStoreBuilder<T, TStore> {
   private _loaderFn!: (...deps: any[]) => Promise<Partial<T>>;
   private _ttlMs = 0;
   private _name!: string;
+  private _dependencies: any[] = [];
 
   withInitialState(state: T): this {
     this._initialState = state;
@@ -24,17 +25,16 @@ export class GlobalStoreBuilder<T, TStore> {
     return this;
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  addDependency(_dep: any): this {
+  addDependency(dep: any): this {
+    this._dependencies.push(dep);
     return this;
   }
 
   buildProvider(token: InjectionToken<GenericGlobalStore<T, TStore>>, extraDeps: any[] = []): Provider {
-    const depsArray = [EnvironmentInjector, ...extraDeps];
+    const depsArray = [EnvironmentInjector, ...this._dependencies, ...extraDeps];
     return {
       provide: token,
       useFactory: (env: EnvironmentInjector, ...injectedDeps: any[]) => {
-
         if (!token) {
           throw new Error('Token is required');
         }
