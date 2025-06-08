@@ -1,4 +1,4 @@
-import { Injectable, InjectionToken, inject } from '@angular/core';
+import { Injectable, InjectionToken, inject, Provider } from '@angular/core';
 import { LoggingService } from '@smz-ui/core';
 
 export interface StoreHistoryEvent {
@@ -70,15 +70,12 @@ export class StoreHistoryService implements IStoreHistoryService {
 
 export const STORE_HISTORY_SERVICE = new InjectionToken<IStoreHistoryService>('STORE_HISTORY_SERVICE');
 
-export function provideStoreHistory(enabled = false) {
-  console.log('*********** provideStoreHistory', enabled);
-  return [
-    { provide: STORE_HISTORY_ENABLED, useValue: enabled },
-    { provide: STORE_HISTORY_SERVICE, useFactory: () => {
-      console.log('*********** useFactory');
-      const isEnabled = inject(STORE_HISTORY_ENABLED);
-      console.log('################################################## STORE_HISTORY_SERVICE', isEnabled);
-      return isEnabled ? inject(StoreHistoryService) : inject(NullStoreHistoryService);
-    }}
-  ];
+export function provideStoreHistory(enabled = false): Provider {
+  return {
+    provide: STORE_HISTORY_SERVICE,
+    useFactory: () => {
+      console.log('################################################## STORE_HISTORY_SERVICE', enabled);
+      return enabled ? inject(StoreHistoryService) : inject(NullStoreHistoryService);
+    }
+  };
 }
