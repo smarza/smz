@@ -12,6 +12,10 @@ export function wrapActionWithStatus<TStore extends {
   key: string
 ): (...args: any[]) => Promise<void> {
   return async (...args: any[]) => {
+    console.log('wrapActionWithStatus _+++++++++++++', key);
+    console.log('store', store);
+    console.log('action', action);
+    console.log('args', args);
     const status = store.getActionStatusSignal?.(key) ?? store.getStatusSignal();
     status.set('loading');
     store.getErrorSignal().set(null);

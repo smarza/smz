@@ -43,6 +43,7 @@ import { FormsModule } from '@angular/forms';
             <tr>
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Store</th>
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Action</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Params</th>
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Timestamp</th>
             </tr>
@@ -51,6 +52,7 @@ import { FormsModule } from '@angular/forms';
             <tr *ngFor="let event of filteredEvents">
               <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ event.storeScope }}</td>
               <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ event.action }}</td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ event.params | json }}</td>
               <td class="px-6 py-4 whitespace-nowrap">
                 <span
                   [class]="getStatusClass(event.status)"

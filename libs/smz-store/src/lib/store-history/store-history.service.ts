@@ -4,6 +4,7 @@ import { LoggingService } from '@smz-ui/core';
 export interface StoreHistoryEvent {
   storeScope: string;
   action: string;
+  params: Record<string, unknown>;
   status: 'idle' | 'loading' | 'resolved' | 'error';
   timestamp: number;
 }

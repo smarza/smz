@@ -62,6 +62,7 @@ export abstract class GlobalStore<T, TStore> {
       this.storeHistoryService.trackEvent({
         storeScope: this.scopeName,
         action: 'load',
+        params: {},
         status: st,
       });
     });
@@ -173,6 +174,7 @@ export abstract class GlobalStore<T, TStore> {
           this.storeHistoryService.trackEvent({
             storeScope: this.scopeName,
             action: key,
+            params: {}, // TODO: add params
             status: s,
           });
         });

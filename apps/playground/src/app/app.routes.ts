@@ -10,7 +10,7 @@ import { PostsCrudComponent } from './ui/pages/posts-crud/posts-crud.component';
 import { postsCrudStoreProvider } from './ui/pages/posts-crud/posts-crud-store.provider';
 import { AlbumsCrudComponent } from './ui/pages/albums-crud/albums-crud.component';
 import { albumsCrudStoreProvider } from './ui/pages/albums-crud/albums-crud-store.provider';
-import { StoreHistoryComponent } from './features/store-history/store-history.component';
+import { StoreHistoryComponent } from './ui/pages/store-history/store-history.component';
 
 export const appRoutes: Route[] = [
   {
