@@ -9,6 +9,7 @@ export class GlobalStoreBuilder<T, TStore> {
   private _ttlMs = 0;
   private _name!: string;
   private _dependencies: any[] = [];
+  private _persistToLocalStorage = false;
 
   withInitialState(state: T): this {
     this._initialState = state;
@@ -22,6 +23,11 @@ export class GlobalStoreBuilder<T, TStore> {
 
   withAutoRefresh(milliseconds: number): this {
     this._ttlMs = milliseconds;
+    return this;
+  }
+
+  withPersistToLocalStorage(persist: boolean): this {
+    this._persistToLocalStorage = persist;
     return this;
   }
 
@@ -46,9 +52,10 @@ export class GlobalStoreBuilder<T, TStore> {
           initialState: this._initialState,
           loaderFn: loader,
           ttlMs: this._ttlMs,
+          persistToLocalStorage: this._persistToLocalStorage,
         });
 
-        void store.reload();
+        void store.initializeState();
 
         return store;
       },

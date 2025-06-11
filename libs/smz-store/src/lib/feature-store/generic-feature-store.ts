@@ -12,15 +12,23 @@ export class GenericFeatureStore<TState, TStore> extends FeatureStore<TState, TS
     this._ttlMs = options.ttlMs ?? 0;
   }
 
-  protected override getInitialState(): TState {
-    return this._initialState;
-  }
-
   protected override loadFromApi(): Promise<Partial<TState>> {
     return this._loaderFn();
   }
 
   protected override getTtlMs(): number {
     return this._ttlMs;
+  }
+
+  public override initializeState(): void {
+    this.updateState(this._initialState);
+  }
+
+  protected override persistState(state: TState): void {
+    // TODO: Implement
+  }
+
+  protected override loadPersistedState(): TState | null {
+    return null;
   }
 }

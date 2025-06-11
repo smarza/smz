@@ -1,1 +1,1 @@
-{"version":"3.2.0","results":[[":src/stores/global-store.spec.ts",{"duration":27.472099999999955,"failed":false}],[":src/stores/blank.spec.ts",{"duration":2.139299999999821,"failed":false}],[":src/dummy/blank.spec.ts",{"duration":2.0660000000002583,"failed":false}]]}
+{"version":"3.2.0","results":[[":src/stores/global-store.spec.ts",{"duration":40.26719999999932,"failed":false}],[":src/stores/blank.spec.ts",{"duration":2.139299999999821,"failed":false}],[":src/dummy/blank.spec.ts",{"duration":2.0660000000002583,"failed":false}]]}

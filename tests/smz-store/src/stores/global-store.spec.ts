@@ -1,81 +1,74 @@
 import { TestBed } from '@angular/core/testing';
-import { GenericGlobalStore, GlobalStore, GlobalStoreBuilder, provideStoreHistory } from '@smz-ui/store';
-import { Injectable, InjectionToken } from '@angular/core';
+import { GenericGlobalStore, GlobalStoreBuilder, provideStoreHistory } from '@smz-ui/store';
+import { InjectionToken } from '@angular/core';
 import { provideLogging } from '@smz-ui/core';
+import { beforeEach } from 'vitest';
 
 interface TestState {
   count: number;
   name: string;
 }
 
-const storeBuilder = new GlobalStoreBuilder<TestState, never>()
-  .withInitialState({ count: 0, name: 'initial' })
-  .withLoaderFn(() => Promise.resolve({ count: 1, name: 'loaded' }));
-
-const STORE_TOKEN = new InjectionToken<GenericGlobalStore<TestState, never>>('STORE_TOKEN');
-
-const storeProvider = storeBuilder.buildProvider(STORE_TOKEN);
+// Test-specific subclass that exposes persistState for testing
+class TestableGlobalStore<T, TStore> extends GenericGlobalStore<T, TStore> {
+  public override persistState(state: T): void {
+    super.persistState(state);
+  }
+}
 
 describe('GlobalStore', () => {
-  let store: GenericGlobalStore<TestState, never>;
+  let store: TestableGlobalStore<TestState, never>;
+  let testCount = 0;
 
   beforeEach(() => {
+    testCount++;
+    localStorage.clear();
+
+    const STORE_TOKEN = `STORE_${testCount}_TOKEN`;
+    const STORE_INJECTION_TOKEN = new InjectionToken<TestableGlobalStore<TestState, never>>(STORE_TOKEN);
+
     TestBed.configureTestingModule({
       providers: [
         provideStoreHistory(),
-        provideLogging({
-          level: 'debug',
-          restrictedScopes: undefined
-        }),
-        storeProvider
-      ],
+        provideLogging({ level: 'debug' }),
+        new GlobalStoreBuilder<TestState, never>()
+          .withInitialState({ count: 0, name: 'initial' })
+          .withPersistToLocalStorage(true)
+          .withLoaderFn(() => Promise.resolve({ count: 1, name: 'loaded' }))
+          .buildProvider(STORE_INJECTION_TOKEN)
+        ],
     });
-    store = TestBed.inject(STORE_TOKEN);
+
+    store = TestBed.inject(STORE_INJECTION_TOKEN) as TestableGlobalStore<TestState, never>;
   });
 
   it('should initialize with the initial state', () => {
-    console.log('store.state() 1', store.state());
-    expect(store.state()).toEqual({ count: 1, name: 'loaded' });
+    expect(store.state()).toEqual({ count: 0, name: 'initial' });
   });
 
   it('should update state when reload is called', async () => {
     await store.reload();
-    console.log('store.state() 2', store.state());
     expect(store.state()).toEqual({ count: 1, name: 'loaded' });
   });
-
-  // it('should handle errors during reload', async () => {
-  //   @Injectable()
-  //   class ErrorTestStore extends GlobalStore<TestState> {
-  //     constructor() {
-  //       super('error-store');
-  //     }
-
-  //     protected override getInitialState(): TestState {
-  //       return { count: 0, name: 'initial' };
-  //     }
-
-  //     protected override loadFromApi(): Promise<Partial<TestState>> {
-  //       return Promise.reject(new Error('Test error'));
-  //     }
-  //   }
-
-  //   TestBed.resetTestingModule();
-  //   TestBed.configureTestingModule({
-  //     providers: [
-  //       ErrorTestStore,
-  //       { provide: 'SCOPE_NAME', useValue: 'error-store' }
-  //     ],
-  //   });
-  //   const errorStore = TestBed.inject(ErrorTestStore);
-  //   await errorStore.reload();
-  //   expect(errorStore.error()).toBeInstanceOf(Error);
-  //   expect(errorStore.error()?.message).toBe('Test error');
-  //   expect(errorStore.status()).toBe('error');
-  // });
 
   it('should update state partially', () => {
     store.updateState({ count: 5 });
     expect(store.state().count).toEqual(5);
+  });
+
+  it('should call persistState after state update', () => {
+    const persistStateSpy = vi.spyOn(store, 'persistState');
+
+    store.updateState({ count: 50, name: 'updated' });
+
+    // Change detection to flush the Service Effects
+    TestBed.tick();
+
+    expect(persistStateSpy).toHaveBeenCalled();
+
+    expect(persistStateSpy).toHaveBeenLastCalledWith(expect.objectContaining({
+      count: 50,
+      name: 'updated'
+    }));
   });
 });

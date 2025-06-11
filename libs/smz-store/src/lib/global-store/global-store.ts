@@ -18,12 +18,10 @@ export type GlobalStoreStatus = 'idle' | 'loading' | 'resolved' | 'error';
 
 @Injectable({ providedIn: 'root' })
 export abstract class GlobalStore<T, TStore> {
-  private readonly scopeName: string;
-  protected readonly stateSignal: WritableSignal<T> = signal<T>(
-    this._deepFreeze(this.getInitialState())
-  );
-  protected readonly statusSignal: WritableSignal<GlobalStoreStatus> = signal<GlobalStoreStatus>('idle');
-  protected readonly errorSignal: WritableSignal<Error | null> = signal<Error | null>(null);
+  protected readonly scopeName: string;
+  private readonly stateSignal: WritableSignal<T> = signal<T>({} as T);
+  private readonly statusSignal: WritableSignal<GlobalStoreStatus> = signal<GlobalStoreStatus>('idle');
+  private readonly errorSignal: WritableSignal<Error | null> = signal<Error | null>(null);
 
   readonly state: Signal<T> = computed(() => this.stateSignal());
   readonly status: Signal<GlobalStoreStatus> = computed(() => {
@@ -51,9 +49,12 @@ export abstract class GlobalStore<T, TStore> {
   constructor(scopeName?: string) {
     this.scopeName = scopeName ?? (this.constructor as { name: string }).name;
     this.logger = this.loggingService.scoped(this.scopeName);
+
     effect(() => {
       const s = this.stateSignal();
       this.logger.debug(`state updated →`, s);
+
+      this.persistState(s);
     });
 
     effect(() => {
@@ -78,7 +79,12 @@ export abstract class GlobalStore<T, TStore> {
   }
 
   /** Initial state value */
-  protected abstract getInitialState(): T;
+  public abstract initializeState(): void;
+
+  protected abstract persistState(state: T): void;
+  protected abstract loadPersistedState(): T | null;
+  protected abstract clearPersistedState(): void;
+
   /** Optional load function */
   protected abstract loadFromApi(): Promise<Partial<T>>;
   /** Optional TTL (ms) */
@@ -104,8 +110,10 @@ export abstract class GlobalStore<T, TStore> {
   }
 
   updateState(partial: Partial<T>): void {
-    this.logger.info(`updateState`, partial);
+    this.logger.debug(`updateState`, partial);
     this.stateSignal.update((s) => this._deepFreeze({ ...(s as any), ...partial }));
+
+    // this.persistState(this.stateSignal());
   }
 
   private _updateLastFetch(): void {
@@ -137,7 +145,7 @@ export abstract class GlobalStore<T, TStore> {
     }
   }
 
-  private _deepFreeze(obj: T, visited: Set<any> = new Set<any>()): T {
+  protected _deepFreeze(obj: T, visited: Set<any> = new Set<any>()): T {
     if (obj === null || obj === undefined || typeof obj !== 'object') {
       return obj;
     }
