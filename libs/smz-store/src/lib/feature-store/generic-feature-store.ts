@@ -29,6 +29,11 @@ export class GenericFeatureStore<TState, TStore> extends FeatureStore<TState, TS
   }
 
   protected override loadPersistedState(): TState | null {
+    // TODO: Implement
     return null;
+  }
+
+  protected override clearPersistedState(): void {
+    // TODO: Implement
   }
 }
