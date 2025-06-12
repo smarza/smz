@@ -47,10 +47,11 @@ export class StateStoreBuilder<TState, TStore extends StateStore<TState, any> = 
 
         class GenericStateStore extends StateStore<TState, TStore> {
           constructor() {
-            super(thisName, thisPlugins);
+            super(thisName, thisPlugins as StateStorePlugin<TState, StateStore<TState, TStore>>[]);
           }
 
           public override initializeState(): void {
+            this.logger.debug('Initializing state', thisInitialState);
             this.updateState(thisInitialState);
           }
 
@@ -60,8 +61,12 @@ export class StateStoreBuilder<TState, TStore extends StateStore<TState, any> = 
         }
 
         const store = new GenericStateStore();
-        void store.initializeState();
-        return store as TStore;
+
+        if (store.state() == null && thisInitialState != null) {
+          void store.initializeState();
+        }
+
+        return store as unknown as TStore;
       },
       deps: depsArray,
     };

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import {
   EffectRef,
   WritableSignal,
@@ -14,13 +15,13 @@ import { STORE_HISTORY_SERVICE } from '../store-history/store-history.service';
 
 export type StateStoreStatus = 'idle' | 'loading' | 'resolved' | 'error';
 
-export interface StateStorePlugin<T, S extends StateStore<T, any>> {
-  (store: S): void;
+export interface StateStorePlugin<T, S extends StateStore<T, unknown>> {
+  (store: S, logger: ScopedLogger, injector: Injector): void;
 }
 
 export abstract class StateStore<T, TStore> {
   protected readonly scopeName: string;
-  private readonly stateSignal: WritableSignal<T> = signal({} as T);
+  public readonly stateSignal: WritableSignal<T> = signal(null as T);
   private readonly statusSignal: WritableSignal<StateStoreStatus> = signal('idle');
   private readonly errorSignal: WritableSignal<Error | null> = signal(null);
 
@@ -32,6 +33,8 @@ export abstract class StateStore<T, TStore> {
   readonly isLoading = computed(() => this.status() === 'loading');
   readonly isError = computed(() => this.status() === 'error');
   readonly isResolved = computed(() => this.status() === 'resolved');
+  readonly isIdle = computed(() => this.status() === 'idle');
+  readonly isLoaded = computed(() => this.status() === 'resolved' || this.status() === 'idle');
 
   protected readonly loggingService = inject(LOGGING_SERVICE);
   protected readonly storeHistoryService = inject(STORE_HISTORY_SERVICE);
@@ -63,7 +66,7 @@ export abstract class StateStore<T, TStore> {
       });
     });
 
-    plugins.forEach((p) => p(this as unknown as StateStore<T, any>));
+    plugins.forEach((p) => p(this as unknown as StateStore<T, unknown>, this.logger, this.injector));
   }
 
   /** Initial state value */
