@@ -37,7 +37,7 @@ export class StateStoreBuilder<TState, TStore extends BaseStateStore<TState>> {
     return this;
   }
 
-  withImplementation(plugin: StateStoreImplementation<TState, TStore>): this {
+  withActions(plugin: StateStoreImplementation<TState, TStore>): this {
     this._implementations.push(plugin);
     return this;
   }
