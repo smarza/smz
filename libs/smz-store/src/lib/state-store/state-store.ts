@@ -7,11 +7,11 @@ import {
   effect,
   inject,
   signal,
-  runInInjectionContext,
   Injector
 } from '@angular/core';
 import { LOGGING_SERVICE, ScopedLogger } from '@smz-ui/core';
 import { STORE_HISTORY_SERVICE } from '../store-history/store-history.service';
+import { BaseStateStore } from './base-state-store';
 
 export type StateStoreStatus = 'idle' | 'loading' | 'resolved' | 'error';
 
@@ -19,7 +19,11 @@ export interface StateStorePlugin<T, S extends StateStore<T, unknown>> {
   (store: S, logger: ScopedLogger, injector: Injector): void;
 }
 
-export abstract class StateStore<T, TStore> {
+export interface StateStoreImplementation<T, S extends BaseStateStore<T>> {
+  (store: S): void;
+}
+
+export abstract class StateStore<T, TStore> implements BaseStateStore<T> {
   protected readonly scopeName: string;
   public readonly stateSignal: WritableSignal<T> = signal(null as T);
   private readonly statusSignal: WritableSignal<StateStoreStatus> = signal('idle');
@@ -46,7 +50,7 @@ export abstract class StateStore<T, TStore> {
     { signal: WritableSignal<StateStoreStatus>; effectRef: EffectRef; params?: any }
   >();
 
-  constructor(scopeName?: string, plugins: Array<StateStorePlugin<T, StateStore<T, TStore>>> = []) {
+  constructor(scopeName?: string, plugins: Array<StateStorePlugin<T, StateStore<T, TStore>>> = [], implementations: Array<StateStoreImplementation<T, any>> = []) {
     this.scopeName = scopeName ?? (this.constructor as { name: string }).name;
     this.logger = this.loggingService.scoped(this.scopeName);
 
@@ -67,6 +71,7 @@ export abstract class StateStore<T, TStore> {
     });
 
     plugins.forEach((p) => p(this as unknown as StateStore<T, unknown>, this.logger, this.injector));
+    implementations.forEach((i) => i(this as unknown as TStore));
   }
 
   /** Initial state value */
@@ -123,36 +128,5 @@ export abstract class StateStore<T, TStore> {
 
   public getErrorSignal(): WritableSignal<Error | null> {
     return this.errorSignal;
-  }
-
-  public getActionStatusSignal(key: Extract<keyof TStore, string>, params?: any): WritableSignal<StateStoreStatus> {
-    let entry = this.actionStatusSignals.get(key);
-    if (!entry) {
-      const status = signal<StateStoreStatus>('idle');
-      const ref = runInInjectionContext(this.injector, () => {
-        return effect(() => {
-          const s = status();
-          this.logger.debug(`[${key}] status changed →`, s);
-          this.storeHistoryService.trackEvent({
-            storeScope: this.scopeName,
-            action: key,
-            params: entry?.params ?? {},
-            status: s,
-          });
-        });
-      });
-      entry = { signal: status, effectRef: ref, params };
-      this.actionStatusSignals.set(key, entry);
-    } else if (params) {
-      entry.params = params;
-    }
-    return entry.signal;
-  }
-
-  public clearActionStatusSignal(key: Extract<keyof TStore, string>): void {
-    const entry = this.actionStatusSignals.get(key);
-    if (!entry) return;
-    entry.effectRef.destroy();
-    this.actionStatusSignals.delete(key);
   }
 }

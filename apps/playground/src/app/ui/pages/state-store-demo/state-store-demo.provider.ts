@@ -1,11 +1,11 @@
 import { InjectionToken } from '@angular/core';
-import { StateStoreBuilder, StateStore, withLocalStoragePersistence, withProactivePolling, withLazyTtl } from '@smz-ui/store';
+import { StateStoreBuilder, withLocalStoragePersistence, withProactivePolling, withLazyTtl, BaseStateStore, StateStore } from '@smz-ui/store';
 
 export interface CounterState {
   count: number;
 }
 
-export interface CounterStore extends StateStore<CounterState, CounterStore> {
+export interface CounterStore extends BaseStateStore<CounterState> {
   increment(): void;
   decrement(): void;
 }
@@ -20,7 +20,7 @@ const builder = new StateStoreBuilder<CounterState, CounterStore>()
   .withPlugin(withLazyTtl<CounterState, CounterStore>(9 * 1000))
   .withPlugin(withProactivePolling<CounterState, CounterStore>(5 * 1000))
   .withPlugin(withLocalStoragePersistence<CounterState, CounterStore>('counter-demo'))
-  .withPlugin((store: CounterStore) => {
+  .withImplementation((store: CounterStore) => {
     store.increment = () => {
       store.updateState({ count: store.state().count + 1 });
     };

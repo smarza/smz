@@ -2,11 +2,12 @@ import { effect, Injector, PLATFORM_ID } from '@angular/core';
 import { StateStore } from './state-store';
 import { ScopedLogger } from '@smz-ui/core';
 import { isPlatformBrowser } from '@angular/common';
+import { BaseStateStore } from './base-state-store';
 
 const PLUGIN_NAME = 'ProactivePolling';
 
-export function withProactivePolling<T, S extends StateStore<T, unknown>>(pollingIntervalMs: number) {
-  return (store: S, logger: ScopedLogger, injector: Injector) => {
+export function withProactivePolling<T, S extends BaseStateStore<T>>(pollingIntervalMs: number) {
+  return (store: StateStore<T, S>, logger: ScopedLogger, injector: Injector) => {
     const platformId = injector.get(PLATFORM_ID);
 
     if (!isPlatformBrowser(platformId)) {
