@@ -1,8 +1,8 @@
 import { Injector, PLATFORM_ID } from '@angular/core';
-import { StateStore } from './state-store';
 import { ScopedLogger } from '@smz-ui/core';
 import { isPlatformBrowser } from '@angular/common';
-import { BaseStateStore } from './base-state-store';
+import { StateStore } from '../state-store';
+import { BaseStateStore } from '../base-state-store';
 
 const PLUGIN_NAME = 'LazyTtl';
 
