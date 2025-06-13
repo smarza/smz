@@ -42,6 +42,14 @@
     },
     "lint": {
       "executor": "@nx/eslint:lint"
+    },
+    "benchmark": {
+      "executor": "@nx/vite:vitest",
+      "options": {
+        "config": "tests/smz-store/vitest.bench.config.mts",
+        "mode": "benchmark"
+      }
     }
   }
 }
+

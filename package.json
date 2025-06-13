@@ -6,7 +6,8 @@
     "start": "nx serve",
     "build": "nx build",
     "watch": "nx build --watch --configuration development",
-    "test": "nx test"
+    "test": "nx test",
+    "benchmark:store": "nx run @smz-ui/store:benchmark"
   },
   "private": true,
   "dependencies": {
@@ -86,3 +87,4 @@
     "includedScripts": []
   }
 }
+
