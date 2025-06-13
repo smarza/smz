@@ -3,30 +3,30 @@ import { StateStore } from './state-store';
 import { ScopedLogger } from '@smz-ui/core';
 import { isPlatformBrowser } from '@angular/common';
 
-const PLUGIN_NAME = 'TTL';
+const PLUGIN_NAME = 'ProactivePolling';
 
-export function withTtl<T, S extends StateStore<T, unknown>>(ttlMs: number) {
+export function withProactivePolling<T, S extends StateStore<T, unknown>>(pollingIntervalMs: number) {
   return (store: S, logger: ScopedLogger, injector: Injector) => {
     const platformId = injector.get(PLATFORM_ID);
 
     if (!isPlatformBrowser(platformId)) {
-      logger.warn(`[${PLUGIN_NAME}] Skipping TTL on server`);
+      logger.warn(`[${PLUGIN_NAME}] Skipping proactive polling on server`);
       return;
     }
 
-    logger.debug(`[${PLUGIN_NAME}] plugin initialized with ttlMs: ${ttlMs}`);
+    logger.debug(`[${PLUGIN_NAME}] plugin initialized with pollingIntervalMs: ${pollingIntervalMs}`);
 
     let timer: ReturnType<typeof setTimeout> | null = null;
     let lastFetch: number | null = null;
 
     const schedule = () => {
-      if (ttlMs <= 0) {
-        logger.debug(`[${PLUGIN_NAME}] TTL is disabled (ttlMs <= 0), skipping schedule`);
+      if (pollingIntervalMs <= 0) {
+        logger.debug(`[${PLUGIN_NAME}] Polling is disabled (pollingIntervalMs <= 0), skipping schedule`);
         return;
       }
 
       if (timer) {
-        logger.debug(`[${PLUGIN_NAME}] Clearing existing TTL timer`);
+        logger.debug(`[${PLUGIN_NAME}] Clearing existing polling timer`);
         clearTimeout(timer);
         timer = null;
       }
@@ -37,17 +37,17 @@ export function withTtl<T, S extends StateStore<T, unknown>>(ttlMs: number) {
       }
 
       const elapsed = Date.now() - lastFetch;
-      const delay = ttlMs - elapsed;
+      const delay = pollingIntervalMs - elapsed;
 
-      logger.debug(`[${PLUGIN_NAME}] TTL calculation: elapsed=${elapsed}ms, delay=${delay}ms`);
+      logger.debug(`[${PLUGIN_NAME}] Polling calculation: elapsed=${elapsed}ms, delay=${delay}ms`);
 
       if (delay <= 0) {
-        logger.debug(`[${PLUGIN_NAME}] TTL expired immediately, reloading now`);
+        logger.debug(`[${PLUGIN_NAME}] Polling interval expired immediately, reloading now`);
         store.reload();
       } else {
         logger.debug(`[${PLUGIN_NAME}] Scheduling reload in ${delay}ms`);
         timer = setTimeout(() => {
-          logger.debug(`[${PLUGIN_NAME}] TTL timeout reached, reloading data`);
+          logger.info(`[${PLUGIN_NAME}] Polling timeout reached, reloading data`);
           store.reload();
         }, delay);
       }
@@ -66,7 +66,7 @@ export function withTtl<T, S extends StateStore<T, unknown>>(ttlMs: number) {
         if (timer) {
           clearTimeout(timer);
           timer = null;
-          logger.debug(`[${PLUGIN_NAME}] TTL timer cleared`);
+          logger.debug(`[${PLUGIN_NAME}] Polling timer cleared`);
         }
       }
     });

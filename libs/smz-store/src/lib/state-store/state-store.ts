@@ -74,14 +74,37 @@ export abstract class StateStore<T, TStore> {
 
   protected abstract loadFromApi(): Promise<Partial<T>>;
 
+  /** Lifecycle hook called before reloading data. Return false to skip the API call */
+  public beforeReload(): Promise<boolean> | boolean {
+    // Default implementation allows the reload
+    return true;
+  }
+
+  /** Lifecycle hook called after reloading data */
+  public afterReload(wasSkipped: boolean): Promise<void> | void {
+    // Default implementation does nothing
+  }
+
   async reload(): Promise<void> {
     this.logger.info(`reload()`);
     this.statusSignal.set('loading');
     this.errorSignal.set(null);
     try {
-      const result = await this.loadFromApi();
-      this.updateState(result);
-      this.statusSignal.set('resolved');
+      const shouldReload = await this.beforeReload();
+
+      if (shouldReload) {
+        const result = await this.loadFromApi();
+        this.updateState(result);
+        this.statusSignal.set('resolved');
+        await this.afterReload(false);
+      }
+      else {
+        this.logger.debug('Reload skipped by plugin');
+        this.statusSignal.set('resolved');
+        this.updateState(this.state());
+        await this.afterReload(true);
+      }
+
     } catch (err) {
       const wrapped = err instanceof Error ? err : new Error(String(err));
       this.errorSignal.set(wrapped);
