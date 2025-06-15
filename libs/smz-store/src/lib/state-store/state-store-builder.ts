@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { EnvironmentInjector, InjectionToken, Provider } from '@angular/core';
+import { DestroyRef, EnvironmentInjector, InjectionToken, Provider } from '@angular/core';
 import { getTokenName } from '../shared/injection-token-helper';
 import { StateStore, StateStoreActions, StateStorePlugin, StateStoreSelectors } from './state-store';
 import { SmzStore, AsyncActionsStore } from './base-state-store';
@@ -49,10 +49,10 @@ export class SmzStateStoreBuilder<TState, TActions, TSelectors = any> {
   }
 
   buildProvider(token: InjectionToken<TActions>, extraDeps: any[] = []): Provider {
-    const depsArray = [EnvironmentInjector, ...this._dependencies, ...extraDeps];
+    const depsArray = [EnvironmentInjector, DestroyRef, ...this._dependencies, ...extraDeps];
     return {
       provide: token,
-      useFactory: (env: EnvironmentInjector, ...injectedDeps: any[]) => {
+      useFactory: (env: EnvironmentInjector, destroyRef: DestroyRef, ...injectedDeps: any[]) => {
         const thisName = this._name ?? getTokenName(token);
         const thisPlugins = this._plugins;
         const thisActions = this._actions;
@@ -71,6 +71,7 @@ export class SmzStateStoreBuilder<TState, TActions, TSelectors = any> {
         }
 
         const store = new GenericStateStore();
+        destroyRef.onDestroy(() => store.ngOnDestroy?.());
 
         const clientActions: TActions = {} as TActions;
         thisActions.forEach(action => action(clientActions, env, store.updateState.bind(store), store.state.bind(store)));

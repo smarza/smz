@@ -146,4 +146,12 @@ export abstract class StateStore<TState> {
     this.logger.debug(`updateState`, partial);
     this.stateSignal.update((s) => ({ ...(s as any), ...partial }));
   }
+
+  /** Cleanup hook called when the store is destroyed */
+  ngOnDestroy(): void {
+    for (const entry of this.actionStatusSignals.values()) {
+      entry.effectRef.destroy();
+    }
+    this.actionStatusSignals.clear();
+  }
 }
