@@ -90,6 +90,7 @@ export class SmzStateStoreBuilder<TState, TActions, TSelectors = any> {
 
         const finalStore: SmzStore<TState, TActions, TSelectors> = {
           status: {
+            status: store.status,
             isLoading: store.isLoading,
             isError: store.isError,
             isResolved: store.isResolved,

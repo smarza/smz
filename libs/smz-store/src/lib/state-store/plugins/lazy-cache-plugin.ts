@@ -31,8 +31,14 @@ export function withLazyCache<T>(ttlMs: number) {
     // Override beforeReload to check TTL
     const originalBeforeReload = store.beforeLoad.bind(store);
     store.beforeLoad = async () => {
+
+      if (store.isError()) {
+        logger.debug(`[${PLUGIN_NAME}] Store is in error, skipping cache check and proceeding with reload`);
+        return originalBeforeReload();
+      }
+
       if (lastFetch === null) {
-        logger.debug(`[${PLUGIN_NAME}] No last fetch timestamp available, proceeding with reload`);
+        logger.debug(`[${PLUGIN_NAME}] No last fetch timestamp available, skipping cache check and proceeding with reload`);
         return originalBeforeReload();
       }
 
@@ -44,6 +50,7 @@ export function withLazyCache<T>(ttlMs: number) {
         return false; // Skip the API call
       }
 
+      logger.debug(`[${PLUGIN_NAME}] Cache expired, proceeding with reload`);
       return originalBeforeReload();
     };
   };

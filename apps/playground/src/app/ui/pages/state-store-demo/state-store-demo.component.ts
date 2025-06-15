@@ -12,7 +12,7 @@ import { STATE_STORE_DEMO_TOKEN, CounterStore } from './state-store-demo.provide
   template: `
     <div class="flex flex-col gap-2">
       <div class="text-3xl font-bold">State Store Demo</div>
-      <div>Status: {{ store.status.isLoaded() }}</div>
+      <div>Status: {{ store.status.status() }}</div>
     </div>
 
     <div class="flex gap-2">

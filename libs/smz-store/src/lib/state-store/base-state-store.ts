@@ -1,7 +1,7 @@
 import { StateStore } from './state-store';
 
 export type AsyncStatusStore<TState> = {
-  readonly [K in keyof Pick<StateStore<TState>, 'isError' | 'isIdle' | 'isLoaded' | 'isResolved' | 'isLoading'>]: StateStore<TState>[K];
+  readonly [K in keyof Pick<StateStore<TState>, 'status' | 'isError' | 'isIdle' | 'isLoaded' | 'isResolved' | 'isLoading'>]: StateStore<TState>[K];
 }
 
 export type AsyncStateStore<TState> = {

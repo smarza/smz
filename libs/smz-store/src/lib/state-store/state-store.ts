@@ -95,13 +95,15 @@ export abstract class StateStore<TState> {
   }
 
   async handleLoad(force = false): Promise<void> {
-    this.logger.info(`load()`);
-    this.statusSignal.set('loading');
-    this.errorSignal.set(null);
+    this.logger.info(`handleLoad()`);
+
     try {
       const shouldReload = await this.beforeLoad();
 
       if (shouldReload || force) {
+        this.statusSignal.set('loading');
+        this.errorSignal.set(null);
+
         const result = await this.loadFromApi();
         this.updateState(result);
         this.statusSignal.set('resolved');
@@ -138,13 +140,5 @@ export abstract class StateStore<TState> {
   updateState(partial: Partial<TState>): void {
     this.logger.debug(`updateState`, partial);
     this.stateSignal.update((s) => ({ ...(s as any), ...partial }));
-  }
-
-  public getStatusSignal(): WritableSignal<StateStoreStatus> {
-    return this.statusSignal;
-  }
-
-  public getErrorSignal(): WritableSignal<Error | null> {
-    return this.errorSignal;
   }
 }
