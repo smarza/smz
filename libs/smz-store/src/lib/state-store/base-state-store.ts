@@ -13,19 +13,16 @@ export type AsyncActionsStore<TState, TStore> = {
   forceReload: StateStore<TState>['forceReload'];
 } & TStore;
 
-// TODO: Implamentar melhor no futuro, pq do jeito que está não funciona quando o objeto não existe no state em runtime.
-// export type AsyncSelectorsStore<TState> = {
-//   readonly [K in keyof TState as `get${Capitalize<string & K>}`]: Signal<TState[K]>;
-// }
+export type AsyncSelectorsStore<TSelectors> = TSelectors;
 
 export type AsyncErrorStore<TState> = {
   readonly [K in keyof Pick<StateStore<TState>, 'error'>]: StateStore<TState>[K];
 }
 
-export type SmzStore<TState, TStore> = {
+export type SmzStore<TState, TStore, TSelectors> = {
   readonly status: AsyncStatusStore<TState>;
   readonly state: AsyncStateStore<TState>;
   readonly actions: AsyncActionsStore<TState, TStore>;
-  // readonly selectors: AsyncSelectorsStore<TState>;
+  readonly selectors: AsyncSelectorsStore<TSelectors>;
   readonly error: AsyncErrorStore<TState>;
 }

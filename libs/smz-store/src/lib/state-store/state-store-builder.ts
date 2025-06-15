@@ -1,16 +1,17 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { EnvironmentInjector, InjectionToken, Provider } from '@angular/core';
 import { getTokenName } from '../shared/injection-token-helper';
-import { StateStore, StateStoreActions, StateStorePlugin } from './state-store';
+import { StateStore, StateStoreActions, StateStorePlugin, StateStoreSelectors } from './state-store';
 import { SmzStore, AsyncActionsStore } from './base-state-store';
 import { withInitialState } from './plugins';
 
-export class StateStoreBuilder<TState, TActions> {
-  private _loaderFn!: (...deps: any[]) => Promise<Partial<TState>>;
+export class SmzStateStoreBuilder<TState, TActions, TSelectors = any> {
+  private _loaderFn!: (injector: EnvironmentInjector, ...deps: any[]) => Promise<Partial<TState>>;
   private _name!: string;
   private _dependencies: any[] = [];
   private _plugins: StateStorePlugin<TState, StateStore<TState>>[] = [];
   private _actions: StateStoreActions<TState, TActions>[] = [];
+  private _selectors: StateStoreSelectors<TState, TSelectors>[] = [];
 
   withScopeName(name: string): this {
     this._name = name;
@@ -22,7 +23,7 @@ export class StateStoreBuilder<TState, TActions> {
     return this;
   }
 
-  withLoaderFn(fn: (...deps: any[]) => Promise<Partial<TState>>): this {
+  withLoaderFn(fn: (injector: EnvironmentInjector, ...deps: any[]) => Promise<Partial<TState>>): this {
     this._loaderFn = fn;
     return this;
   }
@@ -37,8 +38,13 @@ export class StateStoreBuilder<TState, TActions> {
     return this;
   }
 
-  withActions(plugin: StateStoreActions<TState, TActions>): this {
-    this._actions.push(plugin);
+  withActions(actions: StateStoreActions<TState, TActions>): this {
+    this._actions.push(actions);
+    return this;
+  }
+
+  withSelectors(selectors: StateStoreSelectors<TState, TSelectors>): this {
+    this._selectors.push(selectors);
     return this;
   }
 
@@ -50,8 +56,9 @@ export class StateStoreBuilder<TState, TActions> {
         const thisName = this._name ?? getTokenName(token);
         const thisPlugins = this._plugins;
         const thisActions = this._actions;
+        const thisSelectors = this._selectors;
 
-        const loader = () => this._loaderFn(...injectedDeps);
+        const loader = () => this._loaderFn(env, ...injectedDeps);
 
         class GenericStateStore extends StateStore<TState> {
           constructor() {
@@ -68,6 +75,9 @@ export class StateStoreBuilder<TState, TActions> {
         const clientActions: TActions = {} as TActions;
         thisActions.forEach(action => action(clientActions, env, store.updateState.bind(store), store.state.bind(store)));
 
+        const clientSelectors: TSelectors = {} as TSelectors;
+        thisSelectors.forEach(selector => selector(clientSelectors, env, store.state.bind(store)));
+
         function createActions(store: StateStore<TState>, actions: TActions): AsyncActionsStore<TState, TActions> {
           return {
             reload: store.reload.bind(store),
@@ -78,7 +88,7 @@ export class StateStoreBuilder<TState, TActions> {
 
         const actions: AsyncActionsStore<TState, TActions> = createActions(store, clientActions);
 
-        const finalStore: SmzStore<TState, TActions> = {
+        const finalStore: SmzStore<TState, TActions, TSelectors> = {
           status: {
             isLoading: store.isLoading,
             isError: store.isError,
@@ -90,6 +100,7 @@ export class StateStoreBuilder<TState, TActions> {
             state: store.state,
           },
           actions,
+          selectors: clientSelectors,
           error: {
             error: store.error,
           },

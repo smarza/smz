@@ -5,8 +5,8 @@ import { isPlatformBrowser } from '@angular/common';
 
 const PLUGIN_NAME = 'AutoRefresh';
 
-export function withAutoRefresh<T>(pollingIntervalMs: number) {
-  return (store: StateStore<T>, logger: ScopedLogger, injector: Injector) => {
+export function withAutoRefresh<TState>(pollingIntervalMs: number) {
+  return (store: StateStore<TState>, logger: ScopedLogger, injector: Injector) => {
     const platformId = injector.get(PLATFORM_ID);
 
     if (!isPlatformBrowser(platformId)) {

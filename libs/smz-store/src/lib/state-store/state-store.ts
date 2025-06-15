@@ -12,6 +12,7 @@ import {
 } from '@angular/core';
 import { LOGGING_SERVICE, ScopedLogger } from '@smz-ui/core';
 import { STORE_HISTORY_SERVICE } from '../store-history/store-history.service';
+import { createStoreError, StoreError } from './error-handler';
 
 export type StateStoreStatus = 'idle' | 'loading' | 'resolved' | 'error';
 
@@ -23,17 +24,21 @@ export interface StateStoreActions<TState, TActions> {
   (actions: TActions, injector: Injector, updateState: (partial: Partial<TState>) => void, getState: () => TState): void;
 }
 
+export interface StateStoreSelectors<TState, TSelectors> {
+  (selectors: TSelectors, injector: Injector, getState: () => TState): void;
+}
+
 export abstract class StateStore<TState> {
   protected readonly scopeName: string;
   public readonly stateSignal: WritableSignal<TState> = signal(null as TState);
   private readonly statusSignal: WritableSignal<StateStoreStatus> = signal('idle');
-  private readonly errorSignal: WritableSignal<Error | null> = signal(null);
+  private readonly errorSignal: WritableSignal<StoreError | null> = signal(null);
 
   readonly state: Signal<TState> = computed(() => this.stateSignal());
   readonly status: Signal<StateStoreStatus> = computed(() => {
     return this.errorSignal() ? 'error' : this.statusSignal();
   });
-  readonly error: Signal<Error | null> = computed(() => this.errorSignal());
+  readonly error: Signal<StoreError | null> = computed(() => this.errorSignal());
   readonly isLoading = computed(() => this.status() === 'loading');
   readonly isError = computed(() => this.status() === 'error');
   readonly isResolved = computed(() => this.status() === 'resolved');
@@ -110,8 +115,8 @@ export abstract class StateStore<TState> {
       }
 
     } catch (err) {
-      const wrapped = err instanceof Error ? err : new Error(String(err));
-      this.errorSignal.set(wrapped);
+      const wrappedError = createStoreError(err, this.scopeName, this.logger);
+      this.errorSignal.set(wrappedError);
       this.statusSignal.set('error');
     }
   }
