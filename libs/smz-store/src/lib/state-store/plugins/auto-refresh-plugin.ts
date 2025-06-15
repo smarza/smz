@@ -1,4 +1,4 @@
-import { effect, Injector, PLATFORM_ID } from '@angular/core';
+import { effect, Injector, PLATFORM_ID, onCleanup } from '@angular/core';
 import { StateStore } from '../state-store';
 import { ScopedLogger } from '@smz-ui/core';
 import { isPlatformBrowser } from '@angular/common';
@@ -69,6 +69,13 @@ export function withAutoRefresh<TState>(pollingIntervalMs: number) {
           logger.debug(`[${PLUGIN_NAME}] Auto refresh timer cleared`);
         }
       }
+
+      onCleanup(() => {
+        if (timer) {
+          clearTimeout(timer);
+          timer = null;
+        }
+      });
     });
   };
 }
