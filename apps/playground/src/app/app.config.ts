@@ -45,6 +45,6 @@ export const appConfig: ApplicationConfig = {
     provideStoreHistory(),
     provideLogging(appLogging),
     userStoreProvider,
-    authGlobalStoreProvider
+    authGlobalStoreProvider,
   ],
 };

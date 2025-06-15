@@ -1,12 +1,19 @@
-import { effect, Injector, PLATFORM_ID, onCleanup } from '@angular/core';
-import { StateStore } from '../state-store';
+import { effect, Injector, PLATFORM_ID } from '@angular/core';
+import { StateStore, StateStorePlugin } from '../state-store';
 import { ScopedLogger } from '@smz-ui/core';
 import { isPlatformBrowser } from '@angular/common';
 
+// TODO: melhorar a arquitetura dos plugins para que os ciclos de vida sejam tratados de forma mais robusta incluindo o controle de status
+
 const PLUGIN_NAME = 'AutoRefresh';
 
-export function withAutoRefresh<TState>(pollingIntervalMs: number) {
-  return (store: StateStore<TState>, logger: ScopedLogger, injector: Injector) => {
+export function withAutoRefresh<TState>(pollingIntervalMs: number): StateStorePlugin<TState, StateStore<TState>> {
+  let destroyRef = () => void 0;
+  let sleep = () => void 0;
+  let wakeUp = () => void 0;
+  let status: 'idle' | 'running' | 'paused' = 'idle';
+
+  const plugin = (store: StateStore<TState>, logger: ScopedLogger, injector: Injector) => {
     const platformId = injector.get(PLATFORM_ID);
 
     if (!isPlatformBrowser(platformId)) {
@@ -54,6 +61,10 @@ export function withAutoRefresh<TState>(pollingIntervalMs: number) {
     };
 
     effect(() => {
+      if (status === 'paused') {
+        return;
+      }
+
       // Serve para triggar o effect quando o state mudar
       store.stateSignal(); // TODO: o ideal era o isLoaded() mas não está funcionando (computed não está funcionando para o effect)
 
@@ -70,12 +81,36 @@ export function withAutoRefresh<TState>(pollingIntervalMs: number) {
         }
       }
 
-      onCleanup(() => {
+      destroyRef = (() => {
+        logger.debug(`[${PLUGIN_NAME}] Auto refresh plugin destroyed`);
         if (timer) {
           clearTimeout(timer);
           timer = null;
         }
       });
+
+      sleep = () => {
+        logger.warn(`[${PLUGIN_NAME}] Auto refresh plugin sleeping`);
+        if (timer) {
+          clearTimeout(timer);
+          timer = null;
+        }
+        status = 'paused';
+      };
+
+      wakeUp = () => {
+        logger.warn(`[${PLUGIN_NAME}] Auto refresh plugin waking up`);
+        schedule();
+        status = 'idle';
+      };
     });
   };
+
+  plugin.destroy = () => destroyRef();
+
+  plugin.sleep = () => sleep();
+
+  plugin.wakeUp = () => wakeUp();
+
+  return plugin;
 }

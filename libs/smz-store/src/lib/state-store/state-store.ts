@@ -8,7 +8,9 @@ import {
   effect,
   inject,
   signal,
-  Injector
+  Injector,
+  Injectable,
+  OnDestroy
 } from '@angular/core';
 import { LOGGING_SERVICE, ScopedLogger } from '@smz-ui/core';
 import { STORE_HISTORY_SERVICE } from '../store-history/store-history.service';
@@ -18,6 +20,9 @@ export type StateStoreStatus = 'idle' | 'loading' | 'resolved' | 'error';
 
 export interface StateStorePlugin<TState, S extends StateStore<TState>> {
   (store: S, logger: ScopedLogger, injector: Injector): void;
+  destroy(): void;
+  sleep(): void;
+  wakeUp(): void;
 }
 
 export interface StateStoreActions<TState, TActions> {
@@ -28,7 +33,8 @@ export interface StateStoreSelectors<TState, TSelectors> {
   (selectors: TSelectors, injector: Injector, getState: () => TState): void;
 }
 
-export abstract class StateStore<TState> {
+@Injectable()
+export abstract class StateStore<TState> implements OnDestroy {
   protected readonly scopeName: string;
   public readonly stateSignal: WritableSignal<TState> = signal(null as TState);
   private readonly statusSignal: WritableSignal<StateStoreStatus> = signal('idle');
@@ -49,12 +55,7 @@ export abstract class StateStore<TState> {
   protected readonly storeHistoryService = inject(STORE_HISTORY_SERVICE);
   protected logger: ScopedLogger;
   private readonly injector = inject(Injector);
-
-  protected readonly actionStatusSignals = new Map<
-    string,
-    { signal: WritableSignal<StateStoreStatus>; effectRef: EffectRef; params?: any }
-  >();
-
+  private readonly plugins: Array<StateStorePlugin<TState, StateStore<TState>>> = [];
   constructor(scopeName?: string, plugins: Array<StateStorePlugin<TState, StateStore<TState>>> = [], actions: Array<StateStoreActions<TState, any>> = []) {
     this.scopeName = scopeName ?? (this.constructor as { name: string }).name;
     this.logger = this.loggingService.scoped(this.scopeName);
@@ -76,6 +77,8 @@ export abstract class StateStore<TState> {
         status: st,
       });
     });
+
+    this.plugins = plugins;
 
     plugins.forEach((p) => p(this as unknown as StateStore<TState>, this.logger, this.injector));
     actions.forEach((i) => i(this as unknown as StateStore<TState>, this.injector, this.updateState.bind(this), this.state.bind(this)));
@@ -149,9 +152,14 @@ export abstract class StateStore<TState> {
 
   /** Cleanup hook called when the store is destroyed */
   ngOnDestroy(): void {
-    for (const entry of this.actionStatusSignals.values()) {
-      entry.effectRef.destroy();
-    }
-    this.actionStatusSignals.clear();
+    this.logger.debug(`ngOnDestroy()`, this.scopeName);
+    this.plugins.forEach(p => {
+      try {
+        this.logger.debug('destroy plugin', p);
+        (p as any).destroy();
+      } catch (err) {
+        this.logger.error(`Error destroying plugin`, err);
+      }
+    });
   }
 }

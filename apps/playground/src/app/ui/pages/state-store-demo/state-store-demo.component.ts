@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
@@ -111,6 +111,14 @@ import { STATE_STORE_DEMO_TOKEN, CounterStore } from './state-store-demo.provide
     }
   `
 })
-export class StateStoreDemoComponent {
+export class StateStoreDemoComponent implements OnInit, OnDestroy {
   readonly store: CounterStore = inject(STATE_STORE_DEMO_TOKEN);
+
+  ngOnInit(): void {
+    this.store.controls.wakeUp();
+  }
+
+  ngOnDestroy(): void {
+    this.store.controls.sleep();
+  }
 }

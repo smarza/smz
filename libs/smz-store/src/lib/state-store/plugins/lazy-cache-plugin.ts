@@ -1,12 +1,12 @@
 import { Injector, PLATFORM_ID } from '@angular/core';
 import { ScopedLogger } from '@smz-ui/core';
 import { isPlatformBrowser } from '@angular/common';
-import { StateStore } from '../state-store';
+import { StateStore, StateStorePlugin } from '../state-store';
 
 const PLUGIN_NAME = 'LazyCache';
 
-export function withLazyCache<T>(ttlMs: number) {
-  return (store: StateStore<T>, logger: ScopedLogger, injector: Injector) => {
+export function withLazyCache<T>(ttlMs: number): StateStorePlugin<T, StateStore<T>> {
+  const plugin = (store: StateStore<T>, logger: ScopedLogger, injector: Injector) => {
     const platformId = injector.get(PLATFORM_ID);
 
     if (!isPlatformBrowser(platformId)) {
@@ -54,4 +54,12 @@ export function withLazyCache<T>(ttlMs: number) {
       return originalBeforeReload();
     };
   };
+
+  plugin.destroy = () => void 0;
+
+  plugin.sleep = () => void 0;
+
+  plugin.wakeUp = () => void 0;
+
+  return plugin;
 }

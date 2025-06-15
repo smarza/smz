@@ -1,12 +1,26 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { DestroyRef, EnvironmentInjector, InjectionToken, Provider } from '@angular/core';
+import {
+  Injector,
+  inject,
+  DestroyRef,
+  InjectionToken,
+  Provider,
+} from '@angular/core';
 import { getTokenName } from '../shared/injection-token-helper';
-import { StateStore, StateStoreActions, StateStorePlugin, StateStoreSelectors } from './state-store';
+import {
+  StateStore,
+  StateStoreActions,
+  StateStorePlugin,
+  StateStoreSelectors,
+} from './state-store';
 import { SmzStore, AsyncActionsStore } from './base-state-store';
 import { withInitialState } from './plugins';
 
 export class SmzStateStoreBuilder<TState, TActions, TSelectors = any> {
-  private _loaderFn!: (injector: EnvironmentInjector, ...deps: any[]) => Promise<Partial<TState>>;
+  private _loaderFn!: (
+    injector: Injector,
+    ...deps: any[]
+  ) => Promise<Partial<TState>>;
   private _name!: string;
   private _dependencies: any[] = [];
   private _plugins: StateStorePlugin<TState, StateStore<TState>>[] = [];
@@ -23,7 +37,9 @@ export class SmzStateStoreBuilder<TState, TActions, TSelectors = any> {
     return this;
   }
 
-  withLoaderFn(fn: (injector: EnvironmentInjector, ...deps: any[]) => Promise<Partial<TState>>): this {
+  withLoaderFn(
+    fn: (injector: Injector, ...deps: any[]) => Promise<Partial<TState>>
+  ): this {
     this._loaderFn = fn;
     return this;
   }
@@ -48,69 +64,99 @@ export class SmzStateStoreBuilder<TState, TActions, TSelectors = any> {
     return this;
   }
 
-  buildProvider(token: InjectionToken<TActions>, extraDeps: any[] = []): Provider {
-    const depsArray = [EnvironmentInjector, DestroyRef, ...this._dependencies, ...extraDeps];
+  /**
+   * Cria a SmzStore, registra onDestroy e retorna o objeto final.
+   * Usa inject(DestroyRef) para atachar o cleanup ao scope correto.
+   */
+  private instantiateStore(
+    tokenName: string,
+    injector: Injector,
+    injectedDeps: any[]
+  ): SmzStore<TState, TActions, TSelectors> {
+    // aqui garantimos que o DestroyRef venha do injector atual
+    const destroyRef = inject(DestroyRef);
+
+    const name = this._name ?? tokenName;
+    const plugins = this._plugins;
+    const actionsDef = this._actions;
+    const selsDef = this._selectors;
+    const loader = () => this._loaderFn(injector, ...injectedDeps);
+
+    // classe interna que implementa a store real
+    class GenericStateStore extends StateStore<TState> {
+      constructor() {
+        super(name, plugins, actionsDef);
+      }
+      protected override loadFromApi(): Promise<Partial<TState>> {
+        return loader();
+      }
+    }
+
+    const store = new GenericStateStore();
+
+    // cleanup automático ao destructor do injector (root / rota / componente)
+    destroyRef.onDestroy(() => {
+      store.ngOnDestroy?.();
+      plugins.forEach((p) => p.destroy?.());
+    });
+
+    // montar actions
+    const clientActions = {} as TActions;
+    actionsDef.forEach((a) =>
+      a(
+        clientActions,
+        injector,
+        store.updateState.bind(store),
+        store.state.bind(store)
+      )
+    );
+
+    // montar selectors
+    const clientSelectors = {} as TSelectors;
+    selsDef.forEach((s) =>
+      s(clientSelectors, injector, store.state.bind(store))
+    );
+
+    // adicionar reload / forceReload
+    const actions: AsyncActionsStore<TState, TActions> = {
+      reload: store.reload.bind(store),
+      forceReload: store.forceReload.bind(store),
+      ...clientActions,
+    };
+
+    return {
+      status: {
+        status: store.status,
+        isLoading: store.isLoading,
+        isError: store.isError,
+        isResolved: store.isResolved,
+        isIdle: store.isIdle,
+        isLoaded: store.isLoaded,
+      },
+      state: { state: store.state },
+      actions,
+      selectors: clientSelectors,
+      error: { error: store.error },
+      controls: {
+        sleep: () => plugins.forEach((p) => p.sleep?.()),
+        wakeUp: () => plugins.forEach((p) => p.wakeUp?.()),
+      }
+    };
+  }
+
+  /**
+   * Provider para ROOT (aplicação inteira).
+   */
+  buildProvider(
+    token: InjectionToken<TActions>,
+    extraDeps: any[] = []
+  ): Provider {
+    const tokenName = getTokenName(token);
     return {
       provide: token,
-      useFactory: (env: EnvironmentInjector, destroyRef: DestroyRef, ...injectedDeps: any[]) => {
-        const thisName = this._name ?? getTokenName(token);
-        const thisPlugins = this._plugins;
-        const thisActions = this._actions;
-        const thisSelectors = this._selectors;
-
-        const loader = () => this._loaderFn(env, ...injectedDeps);
-
-        class GenericStateStore extends StateStore<TState> {
-          constructor() {
-            super(thisName, thisPlugins, thisActions);
-          }
-
-          protected override loadFromApi(): Promise<Partial<TState>> {
-            return loader();
-          }
-        }
-
-        const store = new GenericStateStore();
-        destroyRef.onDestroy(() => store.ngOnDestroy?.());
-
-        const clientActions: TActions = {} as TActions;
-        thisActions.forEach(action => action(clientActions, env, store.updateState.bind(store), store.state.bind(store)));
-
-        const clientSelectors: TSelectors = {} as TSelectors;
-        thisSelectors.forEach(selector => selector(clientSelectors, env, store.state.bind(store)));
-
-        function createActions(store: StateStore<TState>, actions: TActions): AsyncActionsStore<TState, TActions> {
-          return {
-            reload: store.reload.bind(store),
-            forceReload: store.forceReload.bind(store),
-            ...actions
-          };
-        }
-
-        const actions: AsyncActionsStore<TState, TActions> = createActions(store, clientActions);
-
-        const finalStore: SmzStore<TState, TActions, TSelectors> = {
-          status: {
-            status: store.status,
-            isLoading: store.isLoading,
-            isError: store.isError,
-            isResolved: store.isResolved,
-            isIdle: store.isIdle,
-            isLoaded: store.isLoaded,
-          },
-          state: {
-            state: store.state,
-          },
-          actions,
-          selectors: clientSelectors,
-          error: {
-            error: store.error,
-          },
-        };
-
-        return finalStore;
-      },
-      deps: depsArray,
+      useFactory: (injector: Injector, ...injectedDeps: any[]) =>
+        this.instantiateStore(tokenName, injector, injectedDeps),
+      deps: [Injector, ...this._dependencies, ...extraDeps],
     };
   }
 }

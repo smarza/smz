@@ -19,10 +19,16 @@ export type AsyncErrorStore<TState> = {
   readonly [K in keyof Pick<StateStore<TState>, 'error'>]: StateStore<TState>[K];
 }
 
+export type AsyncControlsStore = {
+  sleep: () => void;
+  wakeUp: () => void;
+}
+
 export type SmzStore<TState, TStore, TSelectors> = {
   readonly status: AsyncStatusStore<TState>;
   readonly state: AsyncStateStore<TState>;
   readonly actions: AsyncActionsStore<TState, TStore>;
   readonly selectors: AsyncSelectorsStore<TSelectors>;
   readonly error: AsyncErrorStore<TState>;
+  readonly controls: AsyncControlsStore
 }

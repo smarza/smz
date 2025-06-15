@@ -1,15 +1,15 @@
 import { effect, Injector, PLATFORM_ID } from '@angular/core';
 import { ScopedLogger } from '@smz-ui/core';
 import { isPlatformBrowser } from '@angular/common';
-import { StateStore } from '../state-store';
+import { StateStore, StateStorePlugin } from '../state-store';
 import { StoreError } from '../error-handler';
 
 const PLUGIN_NAME = 'ErrorHandler';
 
 export type ErrorHandlerCallback = (error: StoreError) => void;
 
-export function withErrorHandler<TState>(onError: ErrorHandlerCallback) {
-  return (store: StateStore<TState>, logger: ScopedLogger, injector: Injector) => {
+export function withErrorHandler<TState>(onError: ErrorHandlerCallback): StateStorePlugin<TState, StateStore<TState>> {
+  const plugin = (store: StateStore<TState>, logger: ScopedLogger, injector: Injector) => {
     logger.debug(`[${PLUGIN_NAME}] plugin initialized`);
 
     const platformId = injector.get(PLATFORM_ID);
@@ -29,4 +29,12 @@ export function withErrorHandler<TState>(onError: ErrorHandlerCallback) {
       }
     });
   };
+
+  plugin.destroy = () => void 0;
+
+  plugin.sleep = () => void 0;
+
+  plugin.wakeUp = () => void 0;
+
+  return plugin;
 }

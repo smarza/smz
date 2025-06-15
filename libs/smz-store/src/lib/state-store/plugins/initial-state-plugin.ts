@@ -1,12 +1,13 @@
 import { Injector, PLATFORM_ID } from '@angular/core';
 import { ScopedLogger } from '@smz-ui/core';
 import { isPlatformBrowser } from '@angular/common';
-import { StateStore } from '../state-store';
+import { StateStore, StateStorePlugin } from '../state-store';
 
 const PLUGIN_NAME = 'INITIAL_STATE';
 
-export function withInitialState<T>(initialState: T) {
-  return (store: StateStore<T>, logger: ScopedLogger, injector: Injector) => {
+export function withInitialState<T>(initialState: T): StateStorePlugin<T, StateStore<T>> {
+
+  const plugin = (store: StateStore<T>, logger: ScopedLogger, injector: Injector) => {
     const platformId = injector.get(PLATFORM_ID);
 
     if (!isPlatformBrowser(platformId)) {
@@ -29,4 +30,12 @@ export function withInitialState<T>(initialState: T) {
 
     setInitialState();
   };
+
+  plugin.destroy = () => void 0;
+
+  plugin.sleep = () => void 0;
+
+  plugin.wakeUp = () => void 0;
+
+  return plugin;
 }
