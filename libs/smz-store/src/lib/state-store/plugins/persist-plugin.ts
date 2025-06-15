@@ -33,10 +33,11 @@ export function withLocalStoragePersistence<T>(key: string) {
 
     effect(() => {
       // Serve para triggar o effect quando o state mudar
-      const s = store.stateSignal(); // TODO: o ideal era o isLoaded() mas não está funcionando (computed não está funcionando para o effect)
+      store.stateSignal(); // TODO: o ideal era o isLoaded() mas não está funcionando (computed não está funcionando para o effect)
 
       const state = store.state();
       try {
+        logger.debug(`[${PLUGIN_NAME}] Saving state`, state);
         localStorage.setItem(storageKey, JSON.stringify(state));
       } catch (err) {
         logger.error(`[${PLUGIN_NAME}] Failed to persist state`, err);

@@ -138,6 +138,11 @@ export abstract class StateStore<TState> {
   }
 
   updateState(partial: Partial<TState>): void {
+    if (this.status() === 'loading') {
+      this.logger.warn(`updateState skipped because store is loading`, partial);
+      return;
+    }
+
     this.logger.debug(`updateState`, partial);
     this.stateSignal.update((s) => ({ ...(s as any), ...partial }));
   }

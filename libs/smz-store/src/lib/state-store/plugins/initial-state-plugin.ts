@@ -19,6 +19,7 @@ export function withInitialState<T>(initialState: T) {
     const setInitialState = () => {
       try {
         if (store.state() === null) {
+          logger.debug(`[${PLUGIN_NAME}] Setting initial state`, initialState);
           store.initializeState(initialState);
         }
       } catch (err) {

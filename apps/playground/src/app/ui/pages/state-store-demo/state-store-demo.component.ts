@@ -10,25 +10,48 @@ import { STATE_STORE_DEMO_TOKEN, CounterStore } from './state-store-demo.provide
   imports: [CommonModule, ButtonModule, CardModule],
   host: { class: 'flex flex-col gap-4' },
   template: `
-    <div class="flex flex-col gap-2">
-      <div class="text-3xl font-bold">State Store Demo</div>
-      <div>Status: {{ store.status.status() }}</div>
-    </div>
+    <div class="text-3xl font-bold">State Store Demo</div>
 
-    <div class="flex gap-2">
-      <button pButton type="button" label="Increment" icon="pi pi-plus" (click)="store.actions.increment()"></button>
-      <button pButton type="button" label="Decrement" icon="pi pi-minus" (click)="store.actions.decrement()"></button>
-      <button pButton type="button" label="Reload" icon="pi pi-refresh" severity="info" (click)="store.actions.reload()"></button>
-      <button pButton type="button" label="Force Reload" icon="pi pi-refresh" severity="warn" (click)="store.actions.forceReload()"></button>
-    </div>
+    <p-card header="Actions" styleClass="w-full">
+      <div class="flex gap-2">
+        <button pButton type="button" label="Increment" icon="pi pi-plus" (click)="store.actions.increment()" [disabled]="store.status.isLoading()"></button>
+        <button pButton type="button" label="Decrement" icon="pi pi-minus" (click)="store.actions.decrement()" [disabled]="store.status.isLoading()"></button>
+        <button pButton type="button" label="Reload" icon="pi pi-refresh" severity="info" (click)="store.actions.reload()" [disabled]="store.status.isLoading()"></button>
+        <button pButton type="button" label="Force Reload" icon="pi pi-refresh" severity="warn" (click)="store.actions.forceReload()" [disabled]="store.status.isLoading()"></button>
+      </div>
+    </p-card>
 
-    @if (store.status.isLoaded()) {
-      <div class="text-2xl font-bold">Count: {{ store.state.state().count }}</div>
-    }
+    <p-card header="State" styleClass="w-full">
+      <div class="flex flex-col gap-4 mb-4">
+        <div class="flex items-center gap-3 p-3 rounded-lg"
+             [ngClass]="{
+               'bg-blue-50 border border-blue-200': store.status.isLoading(),
+               'bg-green-50 border border-green-200': store.status.isLoaded(),
+               'bg-red-50 border border-red-200': store.status.isError()
+             }">
+          <i class="pi text-xl"
+             [ngClass]="{
+               'pi-spin pi-spinner text-blue-500': store.status.isLoading(),
+               'pi-check-circle text-green-500': store.status.isLoaded(),
+               'pi-exclamation-circle text-red-500': store.status.isError()
+             }"></i>
+          <div class="flex flex-col">
+            <span class="font-medium">Status:</span>
+            <span class="text-lg font-semibold">{{ store.status.status().toUpperCase() }}</span>
+          </div>
+        </div>
+      </div>
 
-    @if (store.status.isLoading()) {
-      <p>Loading...</p>
-    }
+      @if (store.status.isLoaded()) {
+        <div class="flex flex-col gap-2 p-4 bg-gray-50 rounded-lg border border-gray-200">
+          <div class="flex items-center gap-2 text-gray-600">
+            <i class="pi pi-hashtag"></i>
+            <span class="font-medium">state.count</span>
+          </div>
+          <div class="text-3xl font-bold text-gray-800">{{ store.state.state().count }}</div>
+        </div>
+      }
+    </p-card>
 
     @if (store.status.isError()) {
       <div class="flex flex-col gap-2 p-4 border border-red-200 rounded-lg bg-red-50">
@@ -53,7 +76,7 @@ import { STATE_STORE_DEMO_TOKEN, CounterStore } from './state-store-demo.provide
     }
 
     @if (store.status.isLoaded()) {
-      <p-card header="Selectors Demo" styleClass="w-full">
+      <p-card header="Selectors" styleClass="w-full">
         <div class="flex flex-col gap-4">
           <div class="grid grid-cols-2 gap-4">
             <div class="flex flex-col gap-2">
