@@ -18,6 +18,7 @@ import { STATE_STORE_DEMO_TOKEN, CounterStore } from './state-store-demo.provide
       <button pButton type="button" label="Increment" icon="pi pi-plus" (click)="store.actions.increment()"></button>
       <button pButton type="button" label="Decrement" icon="pi pi-minus" (click)="store.actions.decrement()"></button>
       <button pButton type="button" label="Reload" icon="pi pi-refresh" severity="info" (click)="store.actions.reload()"></button>
+      <button pButton type="button" label="Force Reload" icon="pi pi-refresh" severity="warn" (click)="store.actions.forceReload()"></button>
     </div>
 
     @if (store.status.isLoaded()) {

@@ -3,51 +3,51 @@ import { StateStore } from '../state-store';
 import { ScopedLogger } from '@smz-ui/core';
 import { isPlatformBrowser } from '@angular/common';
 
-const PLUGIN_NAME = 'ProactivePolling';
+const PLUGIN_NAME = 'AutoRefresh';
 
-export function withProactivePolling<T>(pollingIntervalMs: number) {
+export function withAutoRefresh<T>(pollingIntervalMs: number) {
   return (store: StateStore<T>, logger: ScopedLogger, injector: Injector) => {
     const platformId = injector.get(PLATFORM_ID);
 
     if (!isPlatformBrowser(platformId)) {
-      logger.warn(`[${PLUGIN_NAME}] Skipping proactive polling on server`);
+      logger.warn(`[${PLUGIN_NAME}] Skipping auto refresh on server`);
       return;
     }
 
-    logger.debug(`[${PLUGIN_NAME}] plugin initialized with pollingIntervalMs: ${pollingIntervalMs}`);
+    logger.debug(`[${PLUGIN_NAME}] plugin initialized with interval: ${pollingIntervalMs}`);
 
     let timer: ReturnType<typeof setTimeout> | null = null;
     let lastFetch: number | null = null;
 
     const schedule = () => {
       if (pollingIntervalMs <= 0) {
-        logger.debug(`[${PLUGIN_NAME}] Polling is disabled (pollingIntervalMs <= 0), skipping schedule`);
+        logger.debug(`[${PLUGIN_NAME}] Auto refresh is disabled (interval <= 0), skipping schedule`);
         return;
       }
 
       if (timer) {
-        logger.debug(`[${PLUGIN_NAME}] Clearing existing polling timer`);
+        logger.debug(`[${PLUGIN_NAME}] Clearing existing auto refresh timer`);
         clearTimeout(timer);
         timer = null;
       }
 
       if (lastFetch === null) {
-        logger.debug(`[${PLUGIN_NAME}] No lastFetch timestamp available, skipping schedule`);
+        logger.debug(`[${PLUGIN_NAME}] No last fetch timestamp available, skipping schedule`);
         return;
       }
 
       const elapsed = Date.now() - lastFetch;
       const delay = pollingIntervalMs - elapsed;
 
-      logger.debug(`[${PLUGIN_NAME}] Polling calculation: elapsed=${elapsed}ms, delay=${delay}ms`);
+      logger.debug(`[${PLUGIN_NAME}] Auto refresh calculation: elapsed=${elapsed}ms, delay=${delay}ms`);
 
       if (delay <= 0) {
-        logger.debug(`[${PLUGIN_NAME}] Polling interval expired immediately, reloading now`);
+        logger.debug(`[${PLUGIN_NAME}] Auto refresh interval expired immediately, reloading now`);
         store.reload();
       } else {
-        logger.debug(`[${PLUGIN_NAME}] Scheduling reload in ${delay}ms`);
+        logger.debug(`[${PLUGIN_NAME}] Scheduling auto refresh in ${delay}ms`);
         timer = setTimeout(() => {
-          logger.info(`[${PLUGIN_NAME}] Polling timeout reached, reloading data`);
+          logger.info(`[${PLUGIN_NAME}] Auto refresh timeout reached, reloading data`);
           store.reload();
         }, delay);
       }
@@ -66,7 +66,7 @@ export function withProactivePolling<T>(pollingIntervalMs: number) {
         if (timer) {
           clearTimeout(timer);
           timer = null;
-          logger.debug(`[${PLUGIN_NAME}] Polling timer cleared`);
+          logger.debug(`[${PLUGIN_NAME}] Auto refresh timer cleared`);
         }
       }
     });

@@ -19,8 +19,8 @@ export interface StateStorePlugin<TState, S extends StateStore<TState>> {
   (store: S, logger: ScopedLogger, injector: Injector): void;
 }
 
-export interface StateStoreImplementation<TState, TClientStore> {
-  (store: TClientStore, updateState: (partial: Partial<TState>) => void, getState: () => TState): void;
+export interface StateStoreActions<TState, TActions> {
+  (actions: TActions, injector: Injector, updateState: (partial: Partial<TState>) => void, getState: () => TState): void;
 }
 
 export abstract class StateStore<TState> {
@@ -50,7 +50,7 @@ export abstract class StateStore<TState> {
     { signal: WritableSignal<StateStoreStatus>; effectRef: EffectRef; params?: any }
   >();
 
-  constructor(scopeName?: string, plugins: Array<StateStorePlugin<TState, StateStore<TState>>> = [], implementations: Array<StateStoreImplementation<TState, any>> = []) {
+  constructor(scopeName?: string, plugins: Array<StateStorePlugin<TState, StateStore<TState>>> = [], actions: Array<StateStoreActions<TState, any>> = []) {
     this.scopeName = scopeName ?? (this.constructor as { name: string }).name;
     this.logger = this.loggingService.scoped(this.scopeName);
 
@@ -73,40 +73,40 @@ export abstract class StateStore<TState> {
     });
 
     plugins.forEach((p) => p(this as unknown as StateStore<TState>, this.logger, this.injector));
-    implementations.forEach((i) => i(this as unknown as StateStore<TState>, this.updateState.bind(this), this.state.bind(this)));
+    actions.forEach((i) => i(this as unknown as StateStore<TState>, this.injector, this.updateState.bind(this), this.state.bind(this)));
   }
 
   protected abstract loadFromApi(): Promise<Partial<TState>>;
 
   /** Lifecycle hook called before reloading data. Return false to skip the API call */
-  public beforeReload(): Promise<boolean> | boolean {
+  public beforeLoad(): Promise<boolean> | boolean {
     // Default implementation allows the reload
     return true;
   }
 
   /** Lifecycle hook called after reloading data */
-  public afterReload(wasSkipped: boolean): Promise<void> | void {
+  public afterLoad(wasSkipped: boolean): Promise<void> | void {
     // Default implementation does nothing
   }
 
-  async reload(): Promise<void> {
-    this.logger.info(`reload()`);
+  async handleLoad(force = false): Promise<void> {
+    this.logger.info(`load()`);
     this.statusSignal.set('loading');
     this.errorSignal.set(null);
     try {
-      const shouldReload = await this.beforeReload();
+      const shouldReload = await this.beforeLoad();
 
-      if (shouldReload) {
+      if (shouldReload || force) {
         const result = await this.loadFromApi();
         this.updateState(result);
         this.statusSignal.set('resolved');
-        await this.afterReload(false);
+        await this.afterLoad(false);
       }
       else {
         this.logger.debug('Reload skipped by plugin');
         this.statusSignal.set('resolved');
         this.updateState(this.state());
-        await this.afterReload(true);
+        await this.afterLoad(true);
       }
 
     } catch (err) {
@@ -114,6 +114,14 @@ export abstract class StateStore<TState> {
       this.errorSignal.set(wrapped);
       this.statusSignal.set('error');
     }
+  }
+
+  async reload(): Promise<void> {
+    await this.handleLoad(false);
+  }
+
+  async forceReload(): Promise<void> {
+    await this.handleLoad(true);
   }
 
   initializeState(state: TState): void {

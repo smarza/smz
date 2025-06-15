@@ -9,12 +9,9 @@ export type AsyncStateStore<TState> = {
 }
 
 export type AsyncActionsStore<TState, TStore> = {
-  [K in keyof Pick<StateStore<TState>, 'reload' | 'updateState'> | keyof TStore]: K extends keyof StateStore<TState>
-    ? StateStore<TState>[K]
-    : K extends keyof TStore
-      ? TStore[K]
-      : never;
-}
+  reload: StateStore<TState>['reload'];
+  forceReload: StateStore<TState>['forceReload'];
+} & TStore;
 
 // TODO: Implamentar melhor no futuro, pq do jeito que está não funciona quando o objeto não existe no state em runtime.
 // export type AsyncSelectorsStore<TState> = {
