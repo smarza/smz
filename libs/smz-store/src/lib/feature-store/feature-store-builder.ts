@@ -95,7 +95,7 @@ export class FeatureStoreBuilder<TState, TStore extends GenericFeatureStore<TSta
 
         destroyRef.onDestroy(() => {
           sub.unsubscribe();
-          store.ngOnDestroy();
+          (store as any).destroy?.();
         });
 
         this._setupFns.forEach((fn) => fn(store, ...injectedDeps));

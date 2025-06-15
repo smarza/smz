@@ -71,7 +71,7 @@ export class SmzStateStoreBuilder<TState, TActions, TSelectors = any> {
         }
 
         const store = new GenericStateStore();
-        destroyRef.onDestroy(() => store.ngOnDestroy?.());
+        destroyRef.onDestroy(() => (store as any).destroy?.());
 
         const clientActions: TActions = {} as TActions;
         thisActions.forEach(action => action(clientActions, env, store.updateState.bind(store), store.state.bind(store)));

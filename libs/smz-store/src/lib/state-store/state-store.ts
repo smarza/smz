@@ -148,7 +148,7 @@ export abstract class StateStore<TState> {
   }
 
   /** Cleanup hook called when the store is destroyed */
-  ngOnDestroy(): void {
+  destroy(): void {
     for (const entry of this.actionStatusSignals.values()) {
       entry.effectRef.destroy();
     }

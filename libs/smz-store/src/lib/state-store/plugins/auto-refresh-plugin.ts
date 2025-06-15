@@ -1,4 +1,4 @@
-import { effect, Injector, PLATFORM_ID, onCleanup } from '@angular/core';
+import { effect, Injector, PLATFORM_ID, DestroyRef } from '@angular/core';
 import { StateStore } from '../state-store';
 import { ScopedLogger } from '@smz-ui/core';
 import { isPlatformBrowser } from '@angular/common';
@@ -70,7 +70,8 @@ export function withAutoRefresh<TState>(pollingIntervalMs: number) {
         }
       }
 
-      onCleanup(() => {
+      const destroyRef = injector.get(DestroyRef);
+      destroyRef.onDestroy(() => {
         if (timer) {
           clearTimeout(timer);
           timer = null;
