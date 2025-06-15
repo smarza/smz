@@ -1,38 +1,40 @@
 import { InjectionToken } from '@angular/core';
-import { StateStoreBuilder, withLocalStoragePersistence, withProactivePolling, withLazyTtl, BaseStateStore, withErrorHandler } from '@smz-ui/store';
+import { StateStoreBuilder, withLocalStoragePersistence, withProactivePolling, withLazyTtl, withErrorHandler, SmzStore } from '@smz-ui/store';
 
-export interface CounterState {
+interface CounterState {
   count: number;
 }
 
-export interface CounterStore extends BaseStateStore<CounterState> {
+interface CounterActions {
   increment(): void;
   decrement(): void;
 }
 
-const builder = new StateStoreBuilder<CounterState, CounterStore>()
+export type CounterStore = SmzStore<CounterState, CounterActions>;
+
+const builder = new StateStoreBuilder<CounterState, CounterActions>()
   .withScopeName('CounterStore')
   .withInitialState({ count: 0 })
   .withLoaderFn(async () => {
     console.log('--------------------- API CALL ---------------------');
-    // if (Math.random() < 0.3) { // 30% chance to simulate an API error
-    //   throw new Error('Simulated API error');
-    // }
+    if (Math.random() < 0.3) { // 30% chance to simulate an API error
+      throw new Error('Simulated API error');
+    }
     return { count: Math.floor(Math.random() * 10) };
   })
-  .withPlugin(withLazyTtl<CounterState, CounterStore>(9 * 1000))
-  .withPlugin(withProactivePolling<CounterState, CounterStore>(5 * 1000))
-  .withPlugin(withLocalStoragePersistence<CounterState, CounterStore>('counter-demo'))
-  .withPlugin(withErrorHandler<CounterState, CounterStore>((error, store) => {
+  .withPlugin(withLazyTtl(9 * 1000))
+  .withPlugin(withProactivePolling(5 * 1000))
+  .withPlugin(withLocalStoragePersistence('counter-demo'))
+  .withPlugin(withErrorHandler((error, store) => {
     console.error('Error detected in store', error);
     console.log('store', store);
   }))
-  .withActions((store: CounterStore) => {
+  .withActions((store, updateState, getState) => {
     store.increment = () => {
-      store.updateState({ count: store.state().count + 1 });
+      updateState({ count: getState().count + 1 });
     };
     store.decrement = () => {
-      store.updateState({ count: store.state().count - 1 });
+      updateState({ count: getState().count - 1 });
     };
   });
 

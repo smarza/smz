@@ -2,15 +2,15 @@
 import { EnvironmentInjector, InjectionToken, Provider } from '@angular/core';
 import { getTokenName } from '../shared/injection-token-helper';
 import { StateStore, StateStoreImplementation, StateStorePlugin } from './state-store';
-import { BaseStateStore } from './base-state-store';
+import { SmzStore, AsyncActionsStore } from './base-state-store';
+import { withInitialState } from './plugins';
 
-export class StateStoreBuilder<TState, TStore extends BaseStateStore<TState>> {
-  private _initialState!: TState;
+export class StateStoreBuilder<TState, TActions> {
   private _loaderFn!: (...deps: any[]) => Promise<Partial<TState>>;
   private _name!: string;
   private _dependencies: any[] = [];
-  private _plugins: StateStorePlugin<TState, StateStore<TState, TStore>>[] = [];
-  private _implementations: StateStoreImplementation<TState, TStore>[] = [];
+  private _plugins: StateStorePlugin<TState, StateStore<TState>>[] = [];
+  private _implementations: StateStoreImplementation<TState, TActions>[] = [];
 
   withScopeName(name: string): this {
     this._name = name;
@@ -18,7 +18,7 @@ export class StateStoreBuilder<TState, TStore extends BaseStateStore<TState>> {
   }
 
   withInitialState(state: TState): this {
-    this._initialState = state;
+    this._plugins.push(withInitialState(state));
     return this;
   }
 
@@ -32,17 +32,17 @@ export class StateStoreBuilder<TState, TStore extends BaseStateStore<TState>> {
     return this;
   }
 
-  withPlugin(plugin: StateStorePlugin<TState, StateStore<TState, TStore>>): this {
+  withPlugin(plugin: StateStorePlugin<TState, StateStore<TState>>): this {
     this._plugins.push(plugin);
     return this;
   }
 
-  withActions(plugin: StateStoreImplementation<TState, TStore>): this {
+  withActions(plugin: StateStoreImplementation<TState, TActions>): this {
     this._implementations.push(plugin);
     return this;
   }
 
-  buildProvider(token: InjectionToken<TStore>, extraDeps: any[] = []): Provider {
+  buildProvider(token: InjectionToken<TActions>, extraDeps: any[] = []): Provider {
     const depsArray = [EnvironmentInjector, ...this._dependencies, ...extraDeps];
     return {
       provide: token,
@@ -50,17 +50,12 @@ export class StateStoreBuilder<TState, TStore extends BaseStateStore<TState>> {
         const thisName = this._name ?? getTokenName(token);
         const thisPlugins = this._plugins;
         const thisImplementations = this._implementations;
-        const thisInitialState = this._initialState;
+        // const thisInitialState = this._initialState;
         const loader = () => this._loaderFn(...injectedDeps);
 
-        class GenericStateStore extends StateStore<TState, TStore> {
+        class GenericStateStore extends StateStore<TState> {
           constructor() {
-            super(thisName, thisPlugins as StateStorePlugin<TState, StateStore<TState, TStore>>[], thisImplementations as StateStoreImplementation<TState, TStore>[]);
-          }
-
-          public override initializeState(): void {
-            this.logger.debug('Initializing state', thisInitialState);
-            this.updateState(thisInitialState);
+            super(thisName, thisPlugins as StateStorePlugin<TState, StateStore<TState>>[], thisImplementations as StateStoreImplementation<TState, TActions>[]);
           }
 
           protected override loadFromApi(): Promise<Partial<TState>> {
@@ -69,29 +64,32 @@ export class StateStoreBuilder<TState, TStore extends BaseStateStore<TState>> {
         }
 
         const store = new GenericStateStore();
+        thisImplementations.forEach(impl => impl(store as any, store.updateState.bind(store), store.state.bind(store)));
 
-        if (store.state() == null && thisInitialState != null) {
-          void store.initializeState();
-        }
+        // console.log('--- preparing selectors for store', store.state());
+        // const selectors = Object.keys(store.state() as object).reduce((acc, key) => ({
+        //   ...acc,
+        //   [`get${key.charAt(0).toUpperCase()}${key.slice(1)}`]: computed(() => store.state()[key as keyof TState])
+        // }), {} as AsyncSelectorsStore<TState>);
+        // console.log('--- selectors prepared', selectors);
 
-        // Create a proxy that only exposes specific methods from StateStore
-        const exposedStateStoreMethods: BaseStateStore<TState> = {
-          state: store.state,
-          status: store.status,
-          error: store.error,
-          isLoading: store.isLoading,
-          isError: store.isError,
-          isResolved: store.isResolved,
-          isIdle: store.isIdle,
-          isLoaded: store.isLoaded,
-          reload: store.reload.bind(store),
-          updateState: store.updateState.bind(store),
+        const finalStore: SmzStore<TState, TActions> = {
+          status: {
+            isLoading: store.isLoading,
+            isError: store.isError,
+            isResolved: store.isResolved,
+            isIdle: store.isIdle,
+            isLoaded: store.isLoaded,
+          },
+          state: {
+            state: store.state,
+          },
+          actions: store as unknown as AsyncActionsStore<TState, TActions>,
+          // selectors,
+          error: {
+            error: store.error,
+          },
         };
-
-        // Create the final store by combining exposed StateStore methods with TStore
-        const finalStore = {
-          ...exposedStateStoreMethods,
-        } as TStore;
 
         return finalStore;
       },

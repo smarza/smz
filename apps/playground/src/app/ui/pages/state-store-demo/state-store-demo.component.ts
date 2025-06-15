@@ -1,7 +1,7 @@
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ButtonModule } from 'primeng/button';
-import { CounterStore, STATE_STORE_DEMO_TOKEN } from './state-store-demo.provider';
+import { STATE_STORE_DEMO_TOKEN, CounterStore } from './state-store-demo.provider';
 
 @Component({
   selector: 'app-state-store-demo',
@@ -11,25 +11,25 @@ import { CounterStore, STATE_STORE_DEMO_TOKEN } from './state-store-demo.provide
   template: `
     <div class="flex flex-col gap-2">
       <div class="text-3xl font-bold">State Store Demo</div>
-      <div>Status: {{ store.status() }}</div>
+      <div>Status: {{ store.status.isLoaded() }}</div>
     </div>
 
     <div class="flex gap-2">
-      <button pButton type="button" label="Increment" icon="pi pi-plus" (click)="store.increment()"></button>
-      <button pButton type="button" label="Decrement" icon="pi pi-minus" (click)="store.decrement()"></button>
-      <button pButton type="button" label="Reload" icon="pi pi-refresh" severity="info" (click)="store.reload()"></button>
+      <button pButton type="button" label="Increment" icon="pi pi-plus" (click)="store.actions.increment()"></button>
+      <button pButton type="button" label="Decrement" icon="pi pi-minus" (click)="store.actions.decrement()"></button>
+      <button pButton type="button" label="Reload" icon="pi pi-refresh" severity="info" (click)="store.actions.reload()"></button>
     </div>
 
-    @if (store.isLoaded()) {
-      <div class="text-2xl font-bold">Count: {{ store.state().count }}</div>
+    @if (store.status.isLoaded()) {
+      <div class="text-2xl font-bold">Count: {{ store.state.state().count }}</div>
     }
 
-    @if (store.isLoading()) {
+    @if (store.status.isLoading()) {
       <p>Loading...</p>
     }
 
-    @if (store.isError()) {
-      <p class="text-red-500">Error: {{ store.error()?.message }}</p>
+    @if (store.status.isError()) {
+      <p class="text-red-500">Error: {{ store.error.error()?.message }}</p>
     }
   `
 })

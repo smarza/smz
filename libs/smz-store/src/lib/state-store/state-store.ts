@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import {
   EffectRef,
@@ -11,25 +12,24 @@ import {
 } from '@angular/core';
 import { LOGGING_SERVICE, ScopedLogger } from '@smz-ui/core';
 import { STORE_HISTORY_SERVICE } from '../store-history/store-history.service';
-import { BaseStateStore } from './base-state-store';
 
 export type StateStoreStatus = 'idle' | 'loading' | 'resolved' | 'error';
 
-export interface StateStorePlugin<T, S extends StateStore<T, unknown>> {
+export interface StateStorePlugin<TState, S extends StateStore<TState>> {
   (store: S, logger: ScopedLogger, injector: Injector): void;
 }
 
-export interface StateStoreImplementation<T, S extends BaseStateStore<T>> {
-  (store: S): void;
+export interface StateStoreImplementation<TState, TClientStore> {
+  (store: TClientStore, updateState: (partial: Partial<TState>) => void, getState: () => TState): void;
 }
 
-export abstract class StateStore<T, TStore> implements BaseStateStore<T> {
+export abstract class StateStore<TState> {
   protected readonly scopeName: string;
-  public readonly stateSignal: WritableSignal<T> = signal(null as T);
+  public readonly stateSignal: WritableSignal<TState> = signal(null as TState);
   private readonly statusSignal: WritableSignal<StateStoreStatus> = signal('idle');
   private readonly errorSignal: WritableSignal<Error | null> = signal(null);
 
-  readonly state: Signal<T> = computed(() => this.stateSignal());
+  readonly state: Signal<TState> = computed(() => this.stateSignal());
   readonly status: Signal<StateStoreStatus> = computed(() => {
     return this.errorSignal() ? 'error' : this.statusSignal();
   });
@@ -38,7 +38,7 @@ export abstract class StateStore<T, TStore> implements BaseStateStore<T> {
   readonly isError = computed(() => this.status() === 'error');
   readonly isResolved = computed(() => this.status() === 'resolved');
   readonly isIdle = computed(() => this.status() === 'idle');
-  readonly isLoaded = computed(() => this.status() === 'resolved' || this.status() === 'idle');
+  readonly isLoaded = computed(() => this.status() === 'resolved');
 
   protected readonly loggingService = inject(LOGGING_SERVICE);
   protected readonly storeHistoryService = inject(STORE_HISTORY_SERVICE);
@@ -50,9 +50,11 @@ export abstract class StateStore<T, TStore> implements BaseStateStore<T> {
     { signal: WritableSignal<StateStoreStatus>; effectRef: EffectRef; params?: any }
   >();
 
-  constructor(scopeName?: string, plugins: Array<StateStorePlugin<T, StateStore<T, TStore>>> = [], implementations: Array<StateStoreImplementation<T, any>> = []) {
+  constructor(scopeName?: string, plugins: Array<StateStorePlugin<TState, StateStore<TState>>> = [], implementations: Array<StateStoreImplementation<TState, any>> = []) {
     this.scopeName = scopeName ?? (this.constructor as { name: string }).name;
     this.logger = this.loggingService.scoped(this.scopeName);
+
+    this.logger.debug('StateStore initialized');
 
     effect(() => {
       const s = this.stateSignal();
@@ -70,14 +72,11 @@ export abstract class StateStore<T, TStore> implements BaseStateStore<T> {
       });
     });
 
-    plugins.forEach((p) => p(this as unknown as StateStore<T, unknown>, this.logger, this.injector));
-    implementations.forEach((i) => i(this as unknown as TStore));
+    plugins.forEach((p) => p(this as unknown as StateStore<TState>, this.logger, this.injector));
+    implementations.forEach((i) => i(this as unknown as StateStore<TState>, this.updateState.bind(this), this.state.bind(this)));
   }
 
-  /** Initial state value */
-  public abstract initializeState(): void;
-
-  protected abstract loadFromApi(): Promise<Partial<T>>;
+  protected abstract loadFromApi(): Promise<Partial<TState>>;
 
   /** Lifecycle hook called before reloading data. Return false to skip the API call */
   public beforeReload(): Promise<boolean> | boolean {
@@ -117,7 +116,13 @@ export abstract class StateStore<T, TStore> implements BaseStateStore<T> {
     }
   }
 
-  updateState(partial: Partial<T>): void {
+  initializeState(state: TState): void {
+    this.logger.debug(`initializeState`, state);
+    this.stateSignal.set(state);
+    this.statusSignal.set('resolved');
+  }
+
+  updateState(partial: Partial<TState>): void {
     this.logger.debug(`updateState`, partial);
     this.stateSignal.update((s) => ({ ...(s as any), ...partial }));
   }

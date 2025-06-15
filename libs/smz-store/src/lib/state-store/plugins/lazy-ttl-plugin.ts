@@ -2,12 +2,11 @@ import { Injector, PLATFORM_ID } from '@angular/core';
 import { ScopedLogger } from '@smz-ui/core';
 import { isPlatformBrowser } from '@angular/common';
 import { StateStore } from '../state-store';
-import { BaseStateStore } from '../base-state-store';
 
 const PLUGIN_NAME = 'LazyTtl';
 
-export function withLazyTtl<T, S extends BaseStateStore<T>>(ttlMs: number) {
-  return (store: StateStore<T, S>, logger: ScopedLogger, injector: Injector) => {
+export function withLazyTtl<T>(ttlMs: number) {
+  return (store: StateStore<T>, logger: ScopedLogger, injector: Injector) => {
     const platformId = injector.get(PLATFORM_ID);
 
     if (!isPlatformBrowser(platformId)) {

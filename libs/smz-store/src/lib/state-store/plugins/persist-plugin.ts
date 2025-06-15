@@ -2,12 +2,11 @@ import { effect, Injector, PLATFORM_ID } from '@angular/core';
 import { ScopedLogger } from '@smz-ui/core';
 import { isPlatformBrowser } from '@angular/common';
 import { StateStore } from '../state-store';
-import { BaseStateStore } from '../base-state-store';
 
 const PLUGIN_NAME = 'LOCAL_STORAGE_PERSISTENCE';
 
-export function withLocalStoragePersistence<T, S extends BaseStateStore<T>>(key: string) {
-  return (store: StateStore<T, S>, logger: ScopedLogger, injector: Injector) => {
+export function withLocalStoragePersistence<T>(key: string) {
+  return (store: StateStore<T>, logger: ScopedLogger, injector: Injector) => {
     const platformId = injector.get(PLATFORM_ID);
 
     if (!isPlatformBrowser(platformId)) {
@@ -23,7 +22,7 @@ export function withLocalStoragePersistence<T, S extends BaseStateStore<T>>(key:
       try {
         const persisted = localStorage.getItem(storageKey);
         if (persisted) {
-          store.updateState(JSON.parse(persisted));
+          store.initializeState(JSON.parse(persisted));
         }
       } catch (err) {
         logger.error(`[${PLUGIN_NAME}] Failed to load persisted state`, err);
