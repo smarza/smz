@@ -1,8 +1,9 @@
 import { TestBed } from '@angular/core/testing';
-import { provideStoreHistory, SmzStateStoreBuilder, SmzStore } from '@smz-ui/store';
-import { InjectionToken } from '@angular/core';
+import { createStateStoreGuard, createStateStoreResolver, provideStoreHistory, SmzStateStoreBuilder, SmzStore } from '@smz-ui/store';
+import { InjectionToken, EnvironmentInjector, runInInjectionContext } from '@angular/core';
 import { provideLogging } from '@smz-ui/core';
 import { beforeEach } from 'vitest';
+import { ActivatedRouteSnapshot, RouterStateSnapshot } from '@angular/router';
 
 interface TestState {
   count: number;
@@ -74,5 +75,51 @@ describe('GlobalStore', () => {
     await store.actions.reload();
     expect(store.state.state().count).toEqual(randomCount);
   });
+
+  it('should return true if the store is resolved', async () => {
+    const builder = baseBuilder.withLoaderFn(async () => Promise.resolve({ count: 1 }));
+    mockStore(builder);
+    const resolver = createStateStoreResolver(TEST_STORE_TOKEN);
+    const result = await runInInjectionContext(TestBed.inject(EnvironmentInjector), () =>
+      resolver(new ActivatedRouteSnapshot(), {} as RouterStateSnapshot)
+    );
+    expect(result).toBe(true);
+  });
+
+  it('should return false if the store is not resolved', async () => {
+    const builder = baseBuilder.withLoaderFn(async () => { throw new Error('Test error'); });
+    mockStore(builder);
+    const resolver = createStateStoreResolver(TEST_STORE_TOKEN);
+    const result = await runInInjectionContext(TestBed.inject(EnvironmentInjector), () =>
+      resolver(new ActivatedRouteSnapshot(), {} as RouterStateSnapshot)
+    );
+    expect(result).toBe(false);
+  });
+
+  // it('should return true if the store is resolved', async () => {
+  //   const builder = baseBuilder.withLoaderFn(async () => Promise.resolve({ count: 1 }));
+  //   mockStore(builder);
+  //   const guard = createStateStoreGuard(TEST_STORE_TOKEN);
+  //   const result = await runInInjectionContext(TestBed.inject(EnvironmentInjector), () =>
+  //     guard(new ActivatedRouteSnapshot(), {} as RouterStateSnapshot)
+  //   );
+  //   expect(result).toBe(true);
+  //   const store = TestBed.inject(TEST_STORE_TOKEN);
+  //   console.log('############################ 1', store?.state?.state());
+  //   // expect(TestBed.inject(TEST_STORE_TOKEN).state.state().count).toEqual(1);
+  // });
+
+  // it('should return false if the store is not resolved', async () => {
+  //   const builder = baseBuilder.withLoaderFn(async () => { throw new Error('Test error'); });
+  //   mockStore(builder);
+  //   const guard = createStateStoreGuard(TEST_STORE_TOKEN);
+  //   const result = await runInInjectionContext(TestBed.inject(EnvironmentInjector), () =>
+  //     guard(new ActivatedRouteSnapshot(), {} as RouterStateSnapshot)
+  //   );
+  //   const store = TestBed.inject(TEST_STORE_TOKEN);
+  //   console.log('############################ 2', store?.state?.state());
+  //   expect(result).toBe(false);
+  //   // expect(store.state.state()).toBeUndefined();
+  // });
 
 });
