@@ -26,7 +26,7 @@ const builder = new SmzStateStoreBuilder<CounterState, CounterActions, CounterSe
   .withInitialState({ count: 0 })
   .withLoaderFn(async (injector) => injector.get(CounterApiService).getRandomCount())
   .withPlugin(withLazyCache(9 * 1000))
-  .withPlugin(withAutoRefresh(5 * 1000))
+  .withPlugin(withAutoRefresh(10 * 1000))
   .withPlugin(withLocalStoragePersistence('counter-demo'))
   .withPlugin(withErrorHandler((error, injector) => injector.get(CustomErrorHandlerService).handleError(error)))
   .withActions((actions, injector, updateState, getState) => {
