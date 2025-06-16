@@ -42,7 +42,7 @@ import { STATE_STORE_DEMO_TOKEN, CounterStore } from './state-store-demo.provide
         </div>
       </div>
 
-      @if (store.status.isLoaded()) {
+      @if (store.state.state()) {
         <div class="flex flex-col gap-2 p-4 bg-gray-50 rounded-lg border border-gray-200">
           <div class="flex items-center gap-2 text-gray-600">
             <i class="pi pi-hashtag"></i>
@@ -75,7 +75,7 @@ import { STATE_STORE_DEMO_TOKEN, CounterStore } from './state-store-demo.provide
       </div>
     }
 
-    @if (store.status.isLoaded()) {
+    @if (store.state.state()) {
       <p-card header="Selectors" styleClass="w-full">
         <div class="flex flex-col gap-4">
           <div class="grid grid-cols-2 gap-4">

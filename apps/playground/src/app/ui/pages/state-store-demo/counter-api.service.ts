@@ -46,6 +46,6 @@ export class CounterApiService {
       throw this.createApiError();
     }
 
-    return { count: Math.floor(Math.random() * 10) };
+    return { count: Math.floor(Math.random() * 21) - 10 };
   }
 }

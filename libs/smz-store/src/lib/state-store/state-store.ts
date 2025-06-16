@@ -108,14 +108,14 @@ export abstract class StateStore<TState> implements OnDestroy {
         this.errorSignal.set(null);
 
         const result = await this.loadFromApi();
-        this.updateState(result);
         this.statusSignal.set('resolved');
+        this.updateState(result);
         await this.afterLoad(false);
       }
       else {
         this.logger.debug('Reload skipped by plugin');
-        this.statusSignal.set('resolved');
         this.updateState(this.state());
+        this.statusSignal.set('resolved');
         await this.afterLoad(true);
       }
 
@@ -146,8 +146,14 @@ export abstract class StateStore<TState> implements OnDestroy {
       return;
     }
 
-    this.logger.debug(`updateState`, partial);
-    this.stateSignal.update((s) => ({ ...(s as any), ...partial }));
+    try {
+      this.logger.debug(`updateState`, partial);
+      this.stateSignal.update((s) => ({ ...(s as any), ...partial }));
+    } catch (err) {
+      const wrappedError = createStoreError(err, this.scopeName, this.logger);
+      this.errorSignal.set(wrappedError);
+      this.statusSignal.set('error');
+    }
   }
 
   /** Cleanup hook called when the store is destroyed */

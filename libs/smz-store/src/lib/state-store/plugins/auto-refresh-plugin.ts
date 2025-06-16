@@ -26,6 +26,19 @@ export function withAutoRefresh<TState>(pollingIntervalMs: number): StateStorePl
     let timer: ReturnType<typeof setTimeout> | null = null;
     let lastFetch: number | null = null;
 
+    const tryLoad = async () => {
+      try {
+        if (store.isLoading()) {
+          logger.warn(`[${PLUGIN_NAME}] Store is loading, skipping reload`);
+          return;
+        }
+
+        await store.reload();
+      } catch (err) {
+        logger.error(`[${PLUGIN_NAME}] Error reloading store`, err);
+      }
+    };
+
     const schedule = () => {
       if (pollingIntervalMs <= 0) {
         logger.debug(`[${PLUGIN_NAME}] Auto refresh is disabled (interval <= 0), skipping schedule`);
@@ -50,12 +63,12 @@ export function withAutoRefresh<TState>(pollingIntervalMs: number): StateStorePl
 
       if (delay <= 0) {
         logger.debug(`[${PLUGIN_NAME}] Auto refresh interval expired immediately, reloading now`);
-        store.reload();
+        tryLoad();
       } else {
         logger.debug(`[${PLUGIN_NAME}] Scheduling auto refresh in ${delay}ms`);
         timer = setTimeout(() => {
           logger.info(`[${PLUGIN_NAME}] Auto refresh timeout reached, reloading data`);
-          store.reload();
+          tryLoad();
         }, delay);
       }
     };
@@ -73,7 +86,7 @@ export function withAutoRefresh<TState>(pollingIntervalMs: number): StateStorePl
         logger.debug(`[${PLUGIN_NAME}] Store is loaded, setting lastFetch to ${lastFetch}`);
         schedule();
       } else {
-        logger.debug(`[${PLUGIN_NAME}] Store is not loaded (${store.status()}), canceling timers`);
+        logger.warn(`[${PLUGIN_NAME}] Store is not loaded (${store.status()}), canceling timers`);
         if (timer) {
           clearTimeout(timer);
           timer = null;
