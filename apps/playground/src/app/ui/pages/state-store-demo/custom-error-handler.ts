@@ -1,6 +1,4 @@
-import { HttpErrorResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { ApiError } from '@smz-ui/core';
 
 @Injectable({
   providedIn: 'root'
