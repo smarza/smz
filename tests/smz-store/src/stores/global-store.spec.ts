@@ -1,74 +1,78 @@
 import { TestBed } from '@angular/core/testing';
-import { GenericGlobalStore, GlobalStoreBuilder, provideStoreHistory } from '@smz-ui/store';
+import { provideStoreHistory, SmzStateStoreBuilder, SmzStore } from '@smz-ui/store';
 import { InjectionToken } from '@angular/core';
 import { provideLogging } from '@smz-ui/core';
 import { beforeEach } from 'vitest';
 
 interface TestState {
   count: number;
-  name: string;
 }
 
-// Test-specific subclass that exposes persistState for testing
-class TestableGlobalStore<T, TStore> extends GenericGlobalStore<T, TStore> {
-  public override persistState(state: T): void {
-    super.persistState(state);
-  }
+interface TestActions {
+  increment(): void;
+  decrement(): void;
 }
+
+interface TestSelectors {
+  isPositive(): boolean;
+  isNegative(): boolean;
+  isZero(): boolean;
+  doubleCount(): number;
+}
+
+type TestStore = SmzStore<TestState, TestActions, TestSelectors>;
+
+const baseBuilder = new SmzStateStoreBuilder<TestState, TestActions, TestSelectors>()
+  .withScopeName('TestStore')
+  .withLoaderFn(async () => Promise.resolve({ count: 1 }));
+
+const TEST_STORE_TOKEN = new InjectionToken<TestStore>('TEST_STORE_TOKEN');
+
+const mockStore = (builder: SmzStateStoreBuilder<TestState, TestActions, TestSelectors>) => {
+  TestBed.configureTestingModule({
+    providers: [
+      provideStoreHistory(),
+      provideLogging({ level: 'debug' }),
+      builder.buildProvider(TEST_STORE_TOKEN),
+      ],
+  });
+};
 
 describe('GlobalStore', () => {
-  let store: TestableGlobalStore<TestState, never>;
-  let testCount = 0;
 
   beforeEach(() => {
-    testCount++;
     localStorage.clear();
+  });
 
-    const STORE_TOKEN = `STORE_${testCount}_TOKEN`;
-    const STORE_INJECTION_TOKEN = new InjectionToken<TestableGlobalStore<TestState, never>>(STORE_TOKEN);
-
-    TestBed.configureTestingModule({
-      providers: [
-        provideStoreHistory(),
-        provideLogging({ level: 'debug' }),
-        new GlobalStoreBuilder<TestState, never>()
-          .withInitialState({ count: 0, name: 'initial' })
-          .withPersistToLocalStorage(true)
-          .withLoaderFn(() => Promise.resolve({ count: 1, name: 'loaded' }))
-          .buildProvider(STORE_INJECTION_TOKEN)
-        ],
-    });
-
-    store = TestBed.inject(STORE_INJECTION_TOKEN) as TestableGlobalStore<TestState, never>;
+  it('should initialize with no state', () => {
+    mockStore(baseBuilder);
+    const store = TestBed.inject(TEST_STORE_TOKEN);
+    expect(store.state.state()).toBeUndefined();
   });
 
   it('should initialize with the initial state', () => {
-    expect(store.state()).toEqual({ count: 0, name: 'initial' });
+    const builder = baseBuilder.withInitialState({ count: 0 });
+    mockStore(builder);
+    const store = TestBed.inject(TEST_STORE_TOKEN);
+    expect(store.state.state().count).toEqual(0);
   });
 
-  it('should update state when reload is called', async () => {
-    await store.reload();
-    expect(store.state()).toEqual({ count: 1, name: 'loaded' });
+  it('should have state after calling forceReload', async () => {
+    const randomCount = Math.floor(Math.random() * 100);
+    const builder = baseBuilder.withLoaderFn(async () => Promise.resolve({ count: randomCount }));
+    mockStore(builder);
+    const store = TestBed.inject(TEST_STORE_TOKEN);
+    await store.actions.forceReload();
+    expect(store.state.state().count).toEqual(randomCount);
   });
 
-  it('should update state partially', () => {
-    store.updateState({ count: 5 });
-    expect(store.state().count).toEqual(5);
+  it('should have state after calling reload', async () => {
+    const randomCount = Math.floor(Math.random() * 100);
+    const builder = baseBuilder.withLoaderFn(async () => Promise.resolve({ count: randomCount }));
+    mockStore(builder);
+    const store = TestBed.inject(TEST_STORE_TOKEN);
+    await store.actions.reload();
+    expect(store.state.state().count).toEqual(randomCount);
   });
 
-  it('should call persistState after state update', () => {
-    const persistStateSpy = vi.spyOn(store, 'persistState');
-
-    store.updateState({ count: 50, name: 'updated' });
-
-    // Change detection to flush the Service Effects
-    TestBed.tick();
-
-    expect(persistStateSpy).toHaveBeenCalled();
-
-    expect(persistStateSpy).toHaveBeenLastCalledWith(expect.objectContaining({
-      count: 50,
-      name: 'updated'
-    }));
-  });
 });

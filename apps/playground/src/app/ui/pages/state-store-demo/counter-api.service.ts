@@ -1,14 +1,16 @@
 import { HttpErrorResponse } from '@angular/common/http';
-import { Injectable } from '@angular/core';
-import { ApiError } from '@smz-ui/core';
+import { inject, Injectable } from '@angular/core';
+import { ApiError, LOGGING_SERVICE } from '@smz-ui/core';
 
 @Injectable({
   providedIn: 'root'
 })
 export class CounterApiService {
-  private readonly ERROR_CHANCE = 0;
-  private readonly MIN_DELAY = 500;
-  private readonly MAX_DELAY = 2000;
+  private readonly ERROR_CHANCE = 0.2;
+  private readonly MIN_DELAY = 1000;
+  private readonly MAX_DELAY = 3000;
+
+  private readonly logger = inject(LOGGING_SERVICE).scoped('CounterApiService');
 
   private async delay(): Promise<void> {
     const delay = Math.floor(Math.random() * (this.MAX_DELAY - this.MIN_DELAY) + this.MIN_DELAY);
@@ -40,6 +42,7 @@ export class CounterApiService {
   }
 
   async getRandomCount(): Promise<{ count: number }> {
+    this.logger.debug('------> The API is called');
     await this.delay();
 
     if (Math.random() < this.ERROR_CHANCE) {

@@ -36,7 +36,7 @@ export interface StateStoreSelectors<TState, TSelectors> {
 @Injectable()
 export abstract class StateStore<TState> implements OnDestroy {
   protected readonly scopeName: string;
-  public readonly stateSignal: WritableSignal<TState> = signal(null as TState);
+  public readonly stateSignal: WritableSignal<TState> = signal(undefined as TState);
   private readonly statusSignal: WritableSignal<StateStoreStatus> = signal('idle');
   private readonly errorSignal: WritableSignal<StoreError | null> = signal(null);
 

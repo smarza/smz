@@ -19,7 +19,7 @@ export function withInitialState<T>(initialState: T): StateStorePlugin<T, StateS
 
     const setInitialState = () => {
       try {
-        if (store.state() === null) {
+        if (store.state() === undefined) {
           logger.debug(`[${PLUGIN_NAME}] Setting initial state`, initialState);
           store.initializeState(initialState);
         }

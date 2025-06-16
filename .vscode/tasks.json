@@ -12,6 +12,13 @@
         "reveal": "always",
         "panel": "shared"
       }
+    },
+    {
+      "label": "Run Store Tests",
+      "type": "shell",
+      "command": "nx run @smz-ui/store-testing:test",
+      "group": "build",
+      "problemMatcher": []
     }
   ]
 }

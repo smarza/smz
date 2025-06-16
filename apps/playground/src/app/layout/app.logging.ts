@@ -1,6 +1,6 @@
 import { LoggingConfig } from '@smz-ui/core';
 
 export const appLogging: LoggingConfig = {
-  level: 'debug',
+  level: 'info',
   restrictedScopes: undefined
 }

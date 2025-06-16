@@ -12,7 +12,8 @@ import { AlbumsCrudComponent } from './ui/pages/albums-crud/albums-crud.componen
 import { albumsCrudStoreProvider } from './ui/pages/albums-crud/albums-crud-store.provider';
 import { StoreHistoryComponent } from './ui/pages/store-history/store-history.component';
 import { StateStoreDemoComponent } from './ui/pages/state-store-demo/state-store-demo.component';
-import { stateStoreDemoProvider } from './ui/pages/state-store-demo/state-store-demo.provider';
+import { STATE_STORE_DEMO_TOKEN, stateStoreDemoProvider } from './ui/pages/state-store-demo/state-store-demo.provider';
+import { createStateStoreGuard } from '@smz-ui/store';
 
 export const appRoutes: Route[] = [
   {
@@ -69,6 +70,7 @@ export const appRoutes: Route[] = [
             component: StateStoreDemoComponent,
             data: { title: 'State Store Demo' },
             providers: [stateStoreDemoProvider],
+            canActivate: [createStateStoreGuard(STATE_STORE_DEMO_TOKEN, '/error')],
           },
           { path: '', redirectTo: 'home', pathMatch: 'full' },
         ]
