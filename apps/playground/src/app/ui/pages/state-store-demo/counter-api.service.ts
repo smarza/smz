@@ -46,6 +46,9 @@ export class CounterApiService {
       throw this.createApiError();
     }
 
-    return { count: Math.floor(Math.random() * 21) - 10 };
+    const MIN_COUNT = -10;
+    const MAX_COUNT = 20;
+
+    return { count: Math.floor(Math.random() * (MAX_COUNT - MIN_COUNT + 1)) + MIN_COUNT };
   }
 }

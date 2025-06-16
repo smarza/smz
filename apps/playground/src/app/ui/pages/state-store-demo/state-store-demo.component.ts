@@ -48,7 +48,14 @@ import { STATE_STORE_DEMO_TOKEN, CounterStore } from './state-store-demo.provide
             <i class="pi pi-hashtag"></i>
             <span class="font-medium">state.count</span>
           </div>
-          <div class="text-3xl font-bold text-gray-800">{{ store.state.state().count }}</div>
+          <div class="text-3xl font-bold"
+               [ngClass]="{
+                 'text-green-500': store.state.state().count > 0,
+                 'text-red-500': store.state.state().count < 0,
+                 'text-gray-800': store.state.state().count === 0
+               }">
+            {{ store.state.state().count }}
+          </div>
         </div>
       }
     </p-card>
