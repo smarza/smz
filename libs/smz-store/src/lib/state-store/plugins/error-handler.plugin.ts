@@ -6,7 +6,7 @@ import { StoreError } from '../error-handler';
 
 const PLUGIN_NAME = 'ErrorHandler';
 
-export type ErrorHandlerCallback = (error: StoreError) => void;
+export type ErrorHandlerCallback = (error: StoreError, injector: Injector) => void;
 
 export function withErrorHandler<TState>(onError: ErrorHandlerCallback): StateStorePlugin<TState, StateStore<TState>> {
   const plugin = (store: StateStore<TState>, logger: ScopedLogger, injector: Injector) => {
@@ -15,7 +15,7 @@ export function withErrorHandler<TState>(onError: ErrorHandlerCallback): StateSt
     const platformId = injector.get(PLATFORM_ID);
 
     if (!isPlatformBrowser(platformId)) {
-      logger.warn(`[${PLUGIN_NAME}] Skipping lazy TTL on server`);
+      logger.warn(`[${PLUGIN_NAME}] Skipping error handler on server`);
       return;
     }
 
@@ -25,7 +25,7 @@ export function withErrorHandler<TState>(onError: ErrorHandlerCallback): StateSt
 
       if (isError && error) {
         logger.debug(`[${PLUGIN_NAME}] Store error detected`, error);
-        onError(error);
+        onError(error, injector);
       }
     });
   };

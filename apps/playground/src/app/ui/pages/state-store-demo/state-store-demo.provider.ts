@@ -1,6 +1,7 @@
 import { InjectionToken } from '@angular/core';
 import { SmzStateStoreBuilder, withLocalStoragePersistence, withAutoRefresh, withLazyCache, withErrorHandler, SmzStore } from '@smz-ui/store';
 import { CounterApiService } from './counter-api.service';
+import { CustomErrorHandlerService } from './custom-error-handler';
 
 interface CounterState {
   count: number;
@@ -27,22 +28,31 @@ const builder = new SmzStateStoreBuilder<CounterState, CounterActions, CounterSe
   .withPlugin(withLazyCache(9 * 1000))
   .withPlugin(withAutoRefresh(5 * 1000))
   .withPlugin(withLocalStoragePersistence('counter-demo'))
-  .withPlugin(withErrorHandler((error) => {
-    console.log('Error detected in CounterStore', error);
-    console.error('Error detected in CounterStore');
-  }))
-  .withActions((actions, env, updateState, getState) => {
+  .withPlugin(withErrorHandler((error, injector) => injector.get(CustomErrorHandlerService).handleError(error)))
+  .withActions((actions, injector, updateState, getState) => {
+
+    // Increment count by 1
     actions.increment = () => {
       updateState({ count: getState().count + 1 });
     };
+
+    // Decrement count by 1
     actions.decrement = () => {
       updateState({ count: getState().count - 1 });
     };
+
   })
-  .withSelectors((selectors, env, getState) => {
+  .withSelectors((selectors, injector, getState) => {
+    // Check if count is positive
     selectors.isPositive = () => getState().count > 0;
+
+    // Check if count is negative
     selectors.isNegative = () => getState().count < 0;
+
+    // Check if count is zero
     selectors.isZero = () => getState().count === 0;
+
+    // Double the count
     selectors.doubleCount = () => getState().count * 2;
   });
 
