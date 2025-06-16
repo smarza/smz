@@ -6,7 +6,7 @@ import { ApiError, LOGGING_SERVICE } from '@smz-ui/core';
   providedIn: 'root'
 })
 export class CounterApiService {
-  private readonly ERROR_CHANCE = 0.2;
+  private readonly ERROR_CHANCE = 0.1;
   private readonly MIN_DELAY = 1000;
   private readonly MAX_DELAY = 3000;
 
