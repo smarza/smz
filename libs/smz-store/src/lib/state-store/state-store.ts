@@ -98,7 +98,7 @@ export abstract class StateStore<TState> implements OnDestroy {
   }
 
   async handleLoad(force = false): Promise<void> {
-    this.logger.info(`handleLoad()`);
+    this.logger.info(`handleLoad() called`);
 
     try {
       const shouldReload = await this.beforeLoad();
@@ -135,7 +135,7 @@ export abstract class StateStore<TState> implements OnDestroy {
   }
 
   initializeState(state: TState): void {
-    this.logger.debug(`initializeState`, state);
+    this.logger.debug(`initializeState() called`, state);
     this.stateSignal.set(state);
     this.statusSignal.set('resolved');
   }
@@ -147,7 +147,7 @@ export abstract class StateStore<TState> implements OnDestroy {
     }
 
     try {
-      this.logger.debug(`updateState`, partial);
+      this.logger.debug(`updateState() called`, partial);
       this.stateSignal.update((s) => ({ ...(s as any), ...partial }));
     } catch (err) {
       const wrappedError = createStoreError(err, this.scopeName, this.logger);
@@ -158,7 +158,7 @@ export abstract class StateStore<TState> implements OnDestroy {
 
   /** Cleanup hook called when the store is destroyed */
   ngOnDestroy(): void {
-    this.logger.debug(`ngOnDestroy()`, this.scopeName);
+    this.logger.debug(`ngOnDestroy() called`, this.scopeName);
     this.plugins.forEach(p => {
       try {
         this.logger.debug('destroy plugin', p);
