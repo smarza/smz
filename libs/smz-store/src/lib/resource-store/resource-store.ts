@@ -36,7 +36,7 @@ import { STORE_HISTORY_SERVICE } from '../store-history/store-history.service';
  *  3. status() is set to 'error' while errorSignal is not null.
  */
 @Injectable({ providedIn: 'root' })
-export abstract class ResourceStore<T, P extends Record<string, any> | void> {
+export abstract class ResourceStore<T, P extends Record<string, unknown> | void> {
   // 1) Internal signal for parameters (P), already frozen to ensure immutability
   protected readonly paramsSignal: WritableSignal<P> =
     signal<P>(this._deepFreezeParams(this.getInitialParams()));
@@ -129,7 +129,7 @@ export abstract class ResourceStore<T, P extends Record<string, any> | void> {
       this.storeHistoryService.trackEvent({
         storeScope: this.scopeName,
         action: 'load',
-        params: this.paramsSignal() === undefined ? {} : this.paramsSignal() as Record<string, unknown>,
+        params: this.paramsSignal() === undefined ? {} : this.paramsSignal() as Record<string, any>,
         status: this._mapStatus(this.status())
       });
     });
@@ -201,7 +201,7 @@ export abstract class ResourceStore<T, P extends Record<string, any> | void> {
     this.storeHistoryService.trackEvent({
       storeScope: this.scopeName,
       action: 'setParams',
-      params: newParams === undefined ? {} : newParams,
+      params: newParams === undefined ? {} : newParams as Record<string, any>,
       status: this._mapStatus(this.status())
     });
   }
@@ -286,7 +286,7 @@ export abstract class ResourceStore<T, P extends Record<string, any> | void> {
     }
     if (visited.has(obj)) return obj;
     visited.add(obj);
-    const objAsRecord = obj as Record<string, unknown>;
+    const objAsRecord = obj as Record<string, any>;
     Object.freeze(objAsRecord);
     for (const key of Object.keys(objAsRecord)) {
       const val = objAsRecord[key];

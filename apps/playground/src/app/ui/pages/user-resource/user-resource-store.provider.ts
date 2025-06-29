@@ -13,7 +13,7 @@ import { HttpErrorResponse } from '@angular/common/http';
  * No module, vamos passar ao builder esse token para que
  * o Angular saiba “onde” injetar a instância criada dinamicamente.
  */
-export interface UserParams {
+export interface UserParams extends Record<string, unknown> {
   id: number;
 }
 

@@ -9,7 +9,7 @@ import { getTokenName } from '../shared/injection-token-helper';
 
 export class ResourceStoreBuilder<
   T,
-  P extends Record<string, any> | void
+  P extends Record<string, unknown> | void
 > {
   private _initialParams!: P;
   private _defaultValue!: T;

@@ -17,6 +17,7 @@ A powerful state management solution for Angular applications that provides a cl
 - [Store History](#store-history)
 - [Best Practices](#best-practices)
 - [API Reference](#api-reference)
+- [Resource Store Parameters: Maximum Type-Safety](#resource-store-parameters-maximum-type-safety)
 
 ## Overview
 
@@ -653,4 +654,32 @@ interface StoreHistoryEvent {
   status: 'idle' | 'loading' | 'resolved' | 'error';
   timestamp: number;
 }
+```
+
+## Resource Store Parameters: Maximum Type-Safety
+
+To ensure maximum type-safety, **always declare your parameter interfaces by extending Record<string, unknown>**:
+
+```ts
+export interface UserParams extends Record<string, unknown> {
+  id: number;
+}
+```
+
+This way, your interface will be directly accepted by the store generics, with no need for manual index signatures or type casts.
+
+> **Why?**
+> - This guarantees full compatibility with the library's typing (`P extends Record<string, unknown> | void`).
+> - It prevents type errors and keeps your code robust and safe.
+
+**Usage Example:**
+
+```ts
+export interface UserParams extends Record<string, unknown> {
+  id: number;
+}
+
+const builder = new ResourceStoreBuilder<User, UserParams>()
+  .withInitialParams({ id: 1 })
+  // ...
 ```
