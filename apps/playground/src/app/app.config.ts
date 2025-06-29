@@ -15,7 +15,7 @@ import { appFooter } from './layout/app.footer';
 import { appTopbar } from './layout/app.topbar';
 import { appLayout } from './layout/app.layout';
 import { userStoreProvider } from './ui/pages/user-resource/user-resource-store.provider';
-import { authGlobalStoreProvider } from './ui/pages/global-store-demo/auth-global-store.provider';
+import { authStoreProvider } from './ui/pages/auth-store/auth-store.provider';
 import { provideStoreHistory } from '@smz-ui/store';
 import { provideLogging } from '@smz-ui/core';
 
@@ -45,6 +45,6 @@ export const appConfig: ApplicationConfig = {
     provideStoreHistory(),
     provideLogging(appLogging),
     userStoreProvider,
-    authGlobalStoreProvider,
+    authStoreProvider,
   ],
 };

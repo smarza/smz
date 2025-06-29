@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
@@ -13,44 +13,46 @@ import { Album } from './album.model';
   template: `
     <div class="flex flex-col gap-2">
       <div class="text-3xl font-bold">Albums CRUD Demo</div>
-      <div>Status: {{ store.status() }}</div>
+      <div>Status: {{ store.status.status() }}</div>
     </div>
 
     <form class="flex flex-col gap-2" (ngSubmit)="addAlbum()">
       <input class="border p-1" type="text" placeholder="Title" [(ngModel)]="newTitle" name="title" />
-      <button pButton type="submit" label="Create Album" [disabled]="createStatus() === 'loading'"></button>
-      @if (createStatus() === 'loading') { <span>Creating...</span> }
+      <button pButton type="submit" label="Create Album" [disabled]="store.selectors.isLoading()"></button>
+      @if (store.selectors.isLoading()) { <span>Creating...</span> }
     </form>
 
     <div class="flex gap-2">
-      <button pButton type="button" label="Reload" icon="pi pi-refresh" (click)="store.reload()"></button>
+      <button pButton type="button" label="Reload" icon="pi pi-refresh" (click)="store.actions.reload()"></button>
+      <button pButton type="button" label="Force Reload" icon="pi pi-refresh" (click)="store.actions.forceReload()"></button>
     </div>
 
-    @if (store.isLoading()) {
+    @if (store.status.isLoading()) {
       <p>Loading albums...</p>
     }
 
-    @if (store.isError()) {
-      <p class="text-red-500">Error: {{ store.error()?.message }}</p>
+    @if (store.status.isError()) {
+      <p class="text-red-500">Error: {{ store.error.error()?.message }}</p>
+      <button pButton type="button" label="Clear Error" (click)="store.actions.clearError()"></button>
     }
 
-    @if (store.isResolved()) {
-      <div>Number of albums: {{ store.state().albums.length }}</div>
+    @if (store.status.isResolved()) {
+      <div>Number of albums: {{ store.selectors.albumCount() }}</div>
       <div class="flex flex-col gap-2">
 
-      @for (a of store.state().albums; track a.id) {
+      @for (a of store.state.state().albums; track a.id) {
           <div class="border p-2 flex gap-2 items-center">
 
             @if (editingAlbum && editingAlbum.id === a.id) {
               <input class="border p-1 flex-1" [(ngModel)]="editingAlbum.title" name="title-{{a.id}}" />
-              <button pButton type="button" icon="pi pi-check" (click)="saveEdit()" [disabled]="updateStatus() === 'loading'"></button>
+              <button pButton type="button" icon="pi pi-check" (click)="saveEdit()" [disabled]="store.selectors.isLoading()"></button>
               <button pButton type="button" icon="pi pi-times" (click)="cancelEdit()"></button>
-              @if (updateStatus() === 'loading') { <span>Saving...</span> }
+              @if (store.selectors.isLoading()) { <span>Saving...</span> }
             } @else {
               <div class="flex-1">{{ a.title }}</div>
-              <button pButton type="button" icon="pi pi-pencil" (click)="startEdit(a)" [disabled]="updateStatus() === 'loading'"></button>
-              <button pButton type="button" icon="pi pi-trash" severity="danger" (click)="deleteAlbum(a.id)" [disabled]="deleteStatus() === 'loading'"></button>
-              @if (deleteStatus() === 'loading') { <span>Deleting...</span> }
+              <button pButton type="button" icon="pi pi-pencil" (click)="startEdit(a)" [disabled]="store.selectors.isLoading()"></button>
+              <button pButton type="button" icon="pi pi-trash" severity="danger" (click)="deleteAlbum(a.id)" [disabled]="store.selectors.isLoading()"></button>
+              @if (store.selectors.isLoading()) { <span>Deleting...</span> }
             }
 
           </div>
@@ -60,20 +62,25 @@ import { Album } from './album.model';
     }
   `
 })
-export class AlbumsCrudComponent {
+export class AlbumsCrudComponent implements OnInit, OnDestroy {
   readonly store: AlbumsCrudStore = inject(ALBUMS_CRUD_STORE_TOKEN);
-  createStatus = this.store.getActionStatusSignal('createAlbum');
-  updateStatus = this.store.getActionStatusSignal('updateAlbum');
-  deleteStatus = this.store.getActionStatusSignal('deleteAlbum');
   newTitle = '';
   editingAlbum: Album | null = null;
+
+  ngOnInit(): void {
+    this.store.controls.wakeUp();
+  }
+
+  ngOnDestroy(): void {
+    this.store.controls.sleep();
+  }
 
   trackById = (_: number, item: Album) => item.id;
 
   async addAlbum() {
     const title = this.newTitle.trim();
     if (!title) return;
-    await this.store.createAlbum({ title });
+    await this.store.actions.createAlbum({ title });
     this.newTitle = '';
   }
 
@@ -87,11 +94,11 @@ export class AlbumsCrudComponent {
 
   async saveEdit() {
     if (!this.editingAlbum) return;
-    await this.store.updateAlbum(this.editingAlbum);
+    await this.store.actions.updateAlbum(this.editingAlbum);
     this.editingAlbum = null;
   }
 
   async deleteAlbum(id: number) {
-    await this.store.deleteAlbum(id);
+    await this.store.actions.deleteAlbum(id);
   }
 }

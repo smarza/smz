@@ -1,9 +1,14 @@
 import { Injectable } from '@angular/core';
-import { AuthGlobalState } from './auth-global-store.provider';
+import { User } from '../user-resource/user.model';
+
+export interface AuthState {
+  token: string | null;
+  currentUser: User | null;
+}
 
 @Injectable({ providedIn: 'root' })
 export class AuthApiService {
-  async fetchAuthData(): Promise<Partial<AuthGlobalState>> {
+  async fetchAuthData(): Promise<Partial<AuthState>> {
     await new Promise((resolve) => setTimeout(resolve, 300));
     return {
       token: 'token-' + Math.random().toString(36).substring(2, 8),
