@@ -1,0 +1,40 @@
+{
+  "name": "@smz-ui/store-benchs",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "benchs/smz-store/src",
+  "prefix": "lib",
+  "projectType": "library",
+  "tags": [],
+  "targets": {
+    "build": {
+      "executor": "@nx/angular:ng-packagr-lite",
+      "outputs": ["{workspaceRoot}/dist/{projectRoot}"],
+      "options": {
+        "project": "benchs/smz-store/ng-package.json"
+      },
+      "configurations": {
+        "production": {
+          "tsConfig": "benchs/smz-store/tsconfig.lib.prod.json"
+        },
+        "development": {
+          "tsConfig": "benchs/smz-store/tsconfig.lib.json"
+        }
+      },
+      "defaultConfiguration": "production"
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint"
+    },
+    "bench": {
+      "executor": "@nx/vite:test",
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "options": {
+        "passWithNoTests": true,
+        "reportsDirectory": "../../coverage/benchs/smz-store",
+        "command": "bench",
+        "config": "benchs/smz-store/vitest.config.mts",
+        "reporter": "verbose"
+      }
+    }
+  }
+}
