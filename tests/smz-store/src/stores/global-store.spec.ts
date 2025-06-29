@@ -1,5 +1,5 @@
 import { TestBed } from '@angular/core/testing';
-import { createStateStoreGuard, createStateStoreResolver, provideStoreHistory, SmzStateStoreBuilder, SmzStore } from '@smz-ui/store';
+import { createStateStoreResolver, provideStoreHistory, SmzStateStoreBuilder, SmzStore } from '@smz-ui/store';
 import { InjectionToken, EnvironmentInjector, runInInjectionContext } from '@angular/core';
 import { provideLogging } from '@smz-ui/core';
 import { beforeEach } from 'vitest';
