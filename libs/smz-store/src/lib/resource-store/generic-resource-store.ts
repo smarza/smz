@@ -12,7 +12,7 @@ import { ResourceStore } from './resource-store';
  * builder can create instances with different loaders, initialParams and
  * defaultValue.
  */
-export class GenericResourceStore<T, P extends Record<string, any> | void>
+export class GenericResourceStore<T, P extends Record<string, unknown> | void>
   extends ResourceStore<T, P>
 {
   // 1) Store configuration values received by the constructor

@@ -6,6 +6,7 @@ import {
 import { InjectionToken } from '@angular/core';
 import { User } from './user.model';
 import { UserApiService } from './user.api';
+import { HttpErrorResponse } from '@angular/common/http';
 
 /**
  * Aqui declaramos um token genérico para stores de usuário.
@@ -31,11 +32,11 @@ export const userStoreProvider = (() => {
     // 2) Valor padrão enquanto o backend não responde
     // 3) Loader real: recebe (params, userApiService) e chama o backend
     .withLoaderFn((params: UserParams, api: UserApiService) =>
-      api.getUserById(params.id).catch((httpErr: any) => {
+      api.getUserById(params.id).catch((httpErr: HttpErrorResponse) => {
         if (httpErr.status === 404) {
-          throw new Error(`Usuário ${params.id} não existe.`);
+          throw new Error(`User ${params.id} not found.`);
         }
-        throw new Error(httpErr.message ?? 'Erro desconhecido');
+        throw new Error(httpErr.message ?? 'Unknown error');
       })
     )
     .addDependency(UserApiService)

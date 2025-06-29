@@ -1,11 +1,12 @@
 import { InjectionToken } from '@angular/core';
 import { SmzStateStoreBuilder, withAutoRefresh, SmzStore } from '@smz-ui/store';
 import { AuthApiService, AuthState } from './auth.api';
+import { User } from './user';
 
 interface AuthActions {
   clearAuth(): void;
   updateToken(token: string): void;
-  updateUser(user: any): void;
+  updateUser(user: User): void;
 }
 
 interface AuthSelectors {
@@ -22,7 +23,7 @@ const builder = new SmzStateStoreBuilder<AuthState, AuthActions, AuthSelectors>(
   .withInitialState({ token: null, currentUser: null })
   .withLoaderFn(async (injector) => injector.get(AuthApiService).fetchAuthData())
   .withPlugin(withAutoRefresh(2 * 60 * 1000))
-  .withActions((actions, injector, updateState, getState) => {
+  .withActions((actions, injector, updateState) => {
     // Clear authentication data
     actions.clearAuth = () => {
       updateState({ token: null, currentUser: null });
@@ -34,7 +35,7 @@ const builder = new SmzStateStoreBuilder<AuthState, AuthActions, AuthSelectors>(
     };
 
     // Update user
-    actions.updateUser = (user: any) => {
+    actions.updateUser = (user: User) => {
       updateState({ currentUser: user });
     };
   })

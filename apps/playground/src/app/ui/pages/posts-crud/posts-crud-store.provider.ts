@@ -54,7 +54,7 @@ const builder = new SmzStateStoreBuilder<PostsCrudState, PostsCrudActions, Posts
   .withPlugin(withLazyCache(5 * 60 * 1000)) // 5 minutes cache
   .withPlugin(withAutoRefresh(30 * 1000)) // 30 seconds refresh
   .withPlugin(withLocalStoragePersistence('posts-crud-store'))
-  .withPlugin(withErrorHandler((error, injector) => {
+  .withPlugin(withErrorHandler((error) => {
     console.error('Posts CRUD Store Error:', error);
   }))
   .withActions((actions, injector, updateState, getState) => {
