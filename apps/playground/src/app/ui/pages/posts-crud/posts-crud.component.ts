@@ -19,8 +19,8 @@ import { Post } from './post.model';
     <form class="flex flex-col gap-2" (ngSubmit)="addPost()">
       <input class="border p-1" type="text" placeholder="Title" [(ngModel)]="newTitle" name="title" />
       <textarea class="border p-1" rows="3" placeholder="Body" [(ngModel)]="newBody" name="body"></textarea>
-      <button pButton type="submit" label="Create Post" [disabled]="store.status.isLoading()"></button>
-      @if (store.status.isLoading()) { <span>Creating...</span> }
+      <button pButton type="submit" label="Create Post" [disabled]="store.selectors.isLoading()"></button>
+      @if (store.selectors.isLoading()) { <span>Creating...</span> }
     </form>
 
     <div class="flex gap-2">
@@ -47,17 +47,17 @@ import { Post } from './post.model';
             <input class="border p-1" [(ngModel)]="editingPost.title" name="title-{{p.id}}" />
             <textarea class="border p-1" rows="2" [(ngModel)]="editingPost.body" name="body-{{p.id}}"></textarea>
             <div class="flex gap-2">
-              <button pButton type="button" label="Save" icon="pi pi-check" (click)="saveEdit()" [disabled]="store.status.isLoading()"></button>
+              <button pButton type="button" label="Save" icon="pi pi-check" (click)="saveEdit()" [disabled]="store.selectors.isLoading()"></button>
               <button pButton type="button" label="Cancel" icon="pi pi-times" (click)="cancelEdit()"></button>
-              @if (store.status.isLoading()) { <span>Saving...</span> }
+              @if (store.selectors.isLoading()) { <span>Saving...</span> }
             </div>
           } @else {
             <div class="font-bold">{{ p.title }}</div>
             <div>{{ p.body }}</div>
             <div class="flex gap-2">
-              <button pButton type="button" label="Edit" icon="pi pi-pencil" (click)="startEdit(p)" [disabled]="store.status.isLoading()"></button>
-              <button pButton type="button" label="Delete" severity="danger" (click)="deletePost(p.id)" [disabled]="store.status.isLoading()"></button>
-              @if (store.status.isLoading()) { <span>Deleting...</span> }
+              <button pButton type="button" label="Edit" icon="pi pi-pencil" (click)="startEdit(p)" [disabled]="store.selectors.isLoading()"></button>
+              <button pButton type="button" label="Delete" severity="danger" (click)="deletePost(p.id)" [disabled]="store.selectors.isLoading()"></button>
+              @if (store.selectors.isLoading()) { <span>Deleting...</span> }
             </div>
           }
 
